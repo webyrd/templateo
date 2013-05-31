@@ -181,6 +181,55 @@
   (test "reduceo-8"
     (run* (q) (fresh (x y) (reduceo `((lambda (,x) ((,x ,x) (,x ,x))) (lambda (,y) ,y)) q)))
     '(((lambda (_.0) _.0) : (sym _.0))))
+  (test "reduceo-9"
+    (run* (q)
+      (fresh (x x^^ z)
+        (symbolo x)
+        (symbolo x^^)
+        (symbolo z)
+        (reduceo `((lambda (,z) ((lambda (,x^^) ,x^^) ,z)) (lambda (,x) ,x)) q)))
+    '(((lambda (_.0) _.0) : (sym _.0))))
+  (test "reduceo-10"
+    (run* (q)
+      (fresh (x x^ x^^ y z)
+        (symbolo x)
+        (symbolo x^)
+        (symbolo x^^)
+        (symbolo y)
+        (symbolo z)
+        (reduceo `((lambda (,x^) ,x^) (lambda (,z) ((lambda (,x^^) ,x^^) ,z))) q)))
+    '(((lambda (_.0) ((lambda (_.1) _.1) _.0)) : (sym _.0 _.1))))
+  (test "reduceo-11a"
+    (run* (q)
+      (fresh (x x^ x^^ y z)
+        (symbolo x)
+        (symbolo x^)
+        (symbolo x^^)
+        (symbolo y)
+        (symbolo z)
+        (reduceo `((lambda (,x) ,x) ((lambda (,x^) ,x^) (lambda (,z) ((lambda (,x^^) ,x^^) ,z)))) q)))
+    '(((lambda (_.0) ((lambda (_.1) _.1) _.0)) : (sym _.0 _.1))))  
+  (test "reduceo-12"
+    (run* (q)
+      (fresh (x x^ x^^ y z)
+        (symbolo x)
+        (symbolo x^)
+        (symbolo x^^)
+        (symbolo y)
+        (symbolo z)
+        (reduceo `((lambda (,x) ,x) ((lambda (,x^) ,x^) (lambda (,z) ((lambda (,x^^) ,x^^) ,z)))) q)))
+    '(((lambda (_.0) ((lambda (_.1) _.1) _.0)) : (sym _.0 _.1))))
+  (test "reduceo-11b"
+;;; busted!!! This test fails, retuning ().  Why?    
+    (run* (q)
+      (fresh (x x^ x^^ y z)
+        (symbolo x)
+        (symbolo x^)
+        (symbolo x^^)
+        (symbolo y)
+        (symbolo z)
+        (reduceo `(((lambda (,x^) ,x^) (lambda (,z) ((lambda (,x^^) ,x^^) ,z))) (lambda (,x) ,x)) q)))
+    '(((lambda (_.0) _.0) : (sym _.0))))
 
   ;; (test "reduceo-omega"
   ;;   ; diverges, as it should!!    
