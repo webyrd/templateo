@@ -225,9 +225,19 @@
         (symbolo x)
         (symbolo y)
         (reduceo `((lambda (,x) ,x) (lambda (,y) ,y)) q)))
-    '(((lambda (_.0) _.0) : (sym _.0))))  
-  (test "reduceo-13"
+    '(((lambda (_.0) _.0) : (sym _.0))))
+  (test "reduceo-15"
 ;;; busted!!! This test fails, retuning ().  Why?    
+    (run* (q)
+      (fresh (x y z w)
+        (symbolo x)
+        (symbolo y)
+        (symbolo z)
+        (symbolo w)
+        (reduceo `(((lambda (,x) ,x) (lambda (,y) ,y)) (lambda (,z) ,w)) q)))
+    '(((lambda (_.0) _.1) : (sym _.0 _.1))))  
+  (test "reduceo-13"
+;;; busted!!! This test fails, retuning ().  Why?
     (run* (q)
       (fresh (x y z)
         (symbolo x)
