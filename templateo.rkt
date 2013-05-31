@@ -219,8 +219,24 @@
         (symbolo z)
         (reduceo `((lambda (,x) ,x) ((lambda (,x^) ,x^) (lambda (,z) ((lambda (,x^^) ,x^^) ,z)))) q)))
     '(((lambda (_.0) ((lambda (_.1) _.1) _.0)) : (sym _.0 _.1))))
-  (test "reduceo-11b"
+  (test "reduceo-14"
+    (run* (q)
+      (fresh (x y)
+        (symbolo x)
+        (symbolo y)
+        (reduceo `((lambda (,x) ,x) (lambda (,y) ,y)) q)))
+    '(((lambda (_.0) _.0) : (sym _.0))))  
+  (test "reduceo-13"
 ;;; busted!!! This test fails, retuning ().  Why?    
+    (run* (q)
+      (fresh (x y z)
+        (symbolo x)
+        (symbolo y)
+        (symbolo z)
+        (reduceo `(((lambda (,x) ,x) (lambda (,y) ,y)) (lambda (,z) ,z)) q)))
+    '(((lambda (_.0) _.0) : (sym _.0))))
+  (test "reduceo-11b"
+;;; busted!!! This test fails, retuning ().  Why?
     (run* (q)
       (fresh (x x^ x^^ y z)
         (symbolo x)
