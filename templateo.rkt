@@ -128,9 +128,14 @@
     (run* (q) (fresh (x y) (reduceo `((lambda (,x) ((,x ,x) (,x ,x))) (lambda (,y) ,y)) q)))
     '((lambda (_.0) _.0)))
   (test "reduceo-7"
-    (run 1 (q) (reduceo (fresh (x y) `((lambda (,x) ,x) (lambda (,y) ,y))) q))
+    (run* (q) (reduceo (fresh (x y) `((lambda (,x) ,x) (lambda (,y) ,y))) q))
     '((lambda (_.0) _.0)))
   (test "reduceo-8"
-    (run 1 (q) (fresh (x y) (reduceo `((lambda (,x) ((,x ,x) (,x ,x))) (lambda (,y) ,y)) q)))
+    (run* (q) (fresh (x y) (reduceo `((lambda (,x) ((,x ,x) (,x ,x))) (lambda (,y) ,y)) q)))
     '((lambda (_.0) _.0)))
+
+  ;; (test "reduceo-omega"
+  ;;   ; diverges, as it should!!    
+  ;;   (run 1 (q) (fresh (x y) (reduceo `((lambda (,x) ((,x ,x) (,x ,x))) (lambda (,y) ((,y ,y) (,y ,y)))) q)))
+  ;;   'bottom)
 )
