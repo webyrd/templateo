@@ -14,7 +14,7 @@
 ;;;
 ;;; Would it be better if templateo took a list of variables to copy, and only copied those?
 ;;; (run* (q ) (fresh (x y) (templateo `(,x) `(lambda (,x) ,y) q))
-;;; would associate q with `(lambda (,x^) ,y^), where y^ = y, but with any occurence of x in y lazily replaced with x^.
+;;; would associate q with `(lambda (,x^) ,y^), where y^ = y, but with any occurrence of x in y lazily replaced with x^.
 ;;; Does this make sense?  Would this solve the problem above?  Would need a way of expressing that lazy substitution constraint.
 
 (define valueo
@@ -57,6 +57,21 @@
 (module+ test
   (require cKanren/tester)
 
+  (test "templateo-reordering-1"
+    (run* (q)
+      (fresh (x y a b)
+        (== x y)
+        (templateo `(,x ,y) `(,a ,b))
+        (== q `(,x ,y ,a ,b))))
+    '((_.0 _.0 _.1 _.1)))
+  (test "templateo-reordering-2"
+    (run* (q)
+      (fresh (x y a b)
+        (templateo `(,x ,y) `(,a ,b))
+        (== x y)
+        (== q `(,x ,y ,a ,b))))
+    '((_.0 _.0 _.1 _.1)))
+  
   (test "templateo-1a" (run* (q) (fresh (x) (templateo `(lambda (,x) ,x) q))) '((lambda (_.0) _.0)))
   (test "templateo-1b"
 ;;; What should this return? What would it mean to generate the template?
