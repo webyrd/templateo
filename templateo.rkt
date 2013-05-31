@@ -52,7 +52,11 @@
 (module+ test
   (require cKanren/tester)
 
-  (test "templateo-1" (run* (q) (fresh (x) (templateo `(lambda (,x) ,x) q))) '((lambda (_.0) _.0)))
+  (test "templateo-1a" (run* (q) (fresh (x) (templateo `(lambda (,x) ,x) q))) '((lambda (_.0) _.0)))
+  (test "templateo-1b"
+;;; What should this return? What would it mean to generate the template?
+;;; Wouldn't '(_.0 (_.0 _.1 _.2) ... (_.0 (_.1) _.2) (lambda (_.0) _.1) (lambda (_.0) _.0)) be a reasonable answer?
+    (run* (q) (fresh (x) (templateo q `(lambda (,x) ,x)))) '(_.0))
   (test "templateo-2" (run* (q) (fresh (x y) (templateo `(lambda (,x) (,y ,x)) q))) '((lambda (_.0) (_.1 _.0))))
   (test "templateo-3"
     (run* (q)
@@ -82,7 +86,7 @@
         (== `(,t1 ,t2 ,t3) q)
         (== t1 `(lambda (,y) ,z))
         (== 5 z)
-        (templateo `(lambda (,x) ,x) t1)))    
+        (templateo `(lambda (,x) ,x) t1)))
     '(((lambda (5) 5) (lambda (_.0) _.0) (lambda (_.1) _.1))))
   
   (test "valueo-1" (run* (q) (fresh (x) (valueo `(lambda (,x) ,x)))) '(_.0))
