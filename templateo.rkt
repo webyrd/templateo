@@ -30,7 +30,6 @@
       [(fresh (t1 t2 t1^)
          (== `(,t1 ,t2) t)
          (not-valueo t1)
-         (not-valueo t2)
          (reduceo t1 t1^)
          (reduceo `(,t1^ ,t2) t^))]
       [(fresh (v1 t2 t2^)
@@ -123,41 +122,15 @@
   (test "reduceo-1"
     (run 10 (q) (fresh (t t^) (reduceo t t^) (== `(,t ,t^) q)))
     '((((lambda (_.0) _.1) (lambda (_.0) _.1)) : (sym _.0))
-      ((((lambda (_.0) _.1) (lambda (_.2) _.3)) (lambda (_.4) _.5))
-       :
-       (sym _.0 _.2 _.4))
-      ((((lambda (_.0) _.1) (lambda (_.2) _.3)) (lambda (_.4) _.5))
-       :
-       (sym _.0 _.2 _.4))
-      ((((lambda (_.0) _.1) ((lambda (_.2) _.3) (lambda (_.4) _.5)))
-        (lambda (_.6) _.7))
-       :
-       (sym _.0 _.2 _.4 _.6))
-      (((((lambda (_.0) _.1) (lambda (_.2) _.3))
-         ((lambda (_.4) _.5) (lambda (_.6) _.7)))
-        (lambda (_.8) _.9))
-       :
-       (sym _.0 _.2 _.4 _.6 _.8))
-      ((((lambda (_.0) _.1) ((lambda (_.2) _.3) (lambda (_.4) _.5)))
-        (lambda (_.6) _.7))
-       :
-       (sym _.0 _.2 _.4 _.6))
-      (((((lambda (_.0) _.1) (lambda (_.2) _.3))
-         ((lambda (_.4) _.5) (lambda (_.6) _.7)))
-        (lambda (_.8) _.9))
-       :
-       (sym _.0 _.2 _.4 _.6 _.8))
-      ((((lambda (_.0) _.1) (lambda (_.2) _.3)) (lambda (_.4) _.5))
-       :
-       (sym _.0 _.2 _.4))
-      ((((lambda (_.0) _.1) (lambda (_.2) _.3)) (lambda (_.4) _.5))
-       :
-       (sym _.0 _.2 _.4))
-      (((((lambda (_.0) _.1) (lambda (_.2) _.3))
-         ((lambda (_.4) _.5) (lambda (_.6) _.7)))
-        (lambda (_.8) _.9))
-       :
-       (sym _.0 _.2 _.4 _.6 _.8))))
+      ((((lambda (_.0) _.1) (lambda (_.2) _.3)) (lambda (_.4) _.5)) : (sym _.0 _.2 _.4))
+      (((((lambda (_.0) _.1) (lambda (_.2) _.3)) (lambda (_.4) _.5)) (lambda (_.6) _.7)) : (sym _.0 _.2 _.4 _.6))
+      ((((lambda (_.0) _.1) (lambda (_.2) _.3)) (lambda (_.4) _.5)) : (sym _.0 _.2 _.4))
+      ((((lambda (_.0) _.1) ((lambda (_.2) _.3) (lambda (_.4) _.5))) (lambda (_.6) _.7)) : (sym _.0 _.2 _.4 _.6))
+      (((((lambda (_.0) _.1) (lambda (_.2) _.3)) (lambda (_.4) _.5)) (lambda (_.6) _.7)) : (sym _.0 _.2 _.4 _.6))
+      ((((lambda (_.0) _.1) ((lambda (_.2) _.3) (lambda (_.4) _.5))) (lambda (_.6) _.7)) : (sym _.0 _.2 _.4 _.6))
+      (((((lambda (_.0) _.1) (lambda (_.2) _.3)) ((lambda (_.4) _.5) (lambda (_.6) _.7))) (lambda (_.8) _.9)) : (sym _.0 _.2 _.4 _.6 _.8))
+      ((((lambda (_.0) _.1) (lambda (_.2) _.3)) (lambda (_.4) _.5)) : (sym _.0 _.2 _.4))
+      ((((lambda (_.0) _.1) (lambda (_.2) _.3)) (lambda (_.4) _.5)) : (sym _.0 _.2 _.4))))
   (test "reduceo-2"
     (run* (q) (fresh (x y) (reduceo `(lambda (,x) ,x) q)))
     '(((lambda (_.0) _.0) : (sym _.0))))
@@ -209,6 +182,16 @@
         (symbolo z)
         (reduceo `((lambda (,x) ,x) ((lambda (,x^) ,x^) (lambda (,z) ((lambda (,x^^) ,x^^) ,z)))) q)))
     '(((lambda (_.0) ((lambda (_.1) _.1) _.0)) : (sym _.0 _.1))))  
+  (test "reduceo-11b"
+    (run* (q)
+      (fresh (x x^ x^^ y z)
+        (symbolo x)
+        (symbolo x^)
+        (symbolo x^^)
+        (symbolo y)
+        (symbolo z)
+        (reduceo `(((lambda (,x^) ,x^) (lambda (,z) ((lambda (,x^^) ,x^^) ,z))) (lambda (,x) ,x)) q)))
+    '(((lambda (_.0) _.0) : (sym _.0))))
   (test "reduceo-12"
     (run* (q)
       (fresh (x x^ x^^ y z)
@@ -219,6 +202,14 @@
         (symbolo z)
         (reduceo `((lambda (,x) ,x) ((lambda (,x^) ,x^) (lambda (,z) ((lambda (,x^^) ,x^^) ,z)))) q)))
     '(((lambda (_.0) ((lambda (_.1) _.1) _.0)) : (sym _.0 _.1))))
+  (test "reduceo-13"
+    (run* (q)
+      (fresh (x y z)
+        (symbolo x)
+        (symbolo y)
+        (symbolo z)
+        (reduceo `(((lambda (,x) ,x) (lambda (,y) ,y)) (lambda (,z) ,z)) q)))
+    '(((lambda (_.0) _.0) : (sym _.0))))
   (test "reduceo-14"
     (run* (q)
       (fresh (x y)
@@ -227,7 +218,6 @@
         (reduceo `((lambda (,x) ,x) (lambda (,y) ,y)) q)))
     '(((lambda (_.0) _.0) : (sym _.0))))
   (test "reduceo-15"
-;;; busted!!! This test fails, retuning ().  Why?    
     (run* (q)
       (fresh (x y z w)
         (symbolo x)
@@ -235,27 +225,7 @@
         (symbolo z)
         (symbolo w)
         (reduceo `(((lambda (,x) ,x) (lambda (,y) ,y)) (lambda (,z) ,w)) q)))
-    '(((lambda (_.0) _.1) : (sym _.0 _.1))))  
-  (test "reduceo-13"
-;;; busted!!! This test fails, retuning ().  Why?
-    (run* (q)
-      (fresh (x y z)
-        (symbolo x)
-        (symbolo y)
-        (symbolo z)
-        (reduceo `(((lambda (,x) ,x) (lambda (,y) ,y)) (lambda (,z) ,z)) q)))
-    '(((lambda (_.0) _.0) : (sym _.0))))
-  (test "reduceo-11b"
-;;; busted!!! This test fails, retuning ().  Why?
-    (run* (q)
-      (fresh (x x^ x^^ y z)
-        (symbolo x)
-        (symbolo x^)
-        (symbolo x^^)
-        (symbolo y)
-        (symbolo z)
-        (reduceo `(((lambda (,x^) ,x^) (lambda (,z) ((lambda (,x^^) ,x^^) ,z))) (lambda (,x) ,x)) q)))
-    '(((lambda (_.0) _.0) : (sym _.0))))
+    '(((lambda (_.0) _.1) : (sym _.0 _.1))))
 
   ;; (test "reduceo-omega"
   ;;   ; diverges, as it should!!    
