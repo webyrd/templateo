@@ -48,32 +48,6 @@
          (== x^ v2)                   ; beta reduction via unification
          (reduceo t12^ t^))])))
 
-;; (define reduceo
-;;   (lambda (t t^)
-;;     (conde
-;;       [(valueo t) (== t t^)]
-;;       [(fresh (t1 t2 t1^)
-;;          (== `(,t1 ,t2) t)
-;;          (not-valueo t1)
-;;          (not-valueo t2)
-;;          (reduceo t1 t1^)
-;;          (reduceo `(,t1^ ,t2) t^))]
-;;       [(fresh (v1 t2 t2^)
-;;          (== `(,v1 ,t2) t)
-;;          (valueo v1)
-;;          (not-valueo t2)
-;;          (reduceo t2 t2^)
-;;          (reduceo `(,v1 ,t2^) t^))]
-;;       [(fresh (t1 t1^ x t12 v2 x^ t12^)
-;;          (templateo t1 t1^)             ; declarative copyterm
-;;          (== `(,t1 ,v2) t)
-;;          (== `(lambda (,x) ,t12) t1)
-;;          (valueo v2)
-;;          (== `(lambda (,x^) ,t12^) t1^)
-;;          (== x^ v2)                   ; beta reduction via unification
-;;          (reduceo t12^ t^))])))
-
-
 
 (module+ test
   (require cKanren/tester)
