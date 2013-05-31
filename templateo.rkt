@@ -63,8 +63,9 @@
         (== x y)
         (templateo `(,x ,y) `(,a ,b))
         (== q `(,x ,y ,a ,b))))
-    '((_.0 _.0 _.1 _.1)))
+    '((_.0 _.0 _.1 _.1)))  
   (test "templateo-reordering-2"
+;;; Failing test, courtesy of @nadamin    
     (run* (q)
       (fresh (x y a b)
         (templateo `(,x ,y) `(,a ,b))
