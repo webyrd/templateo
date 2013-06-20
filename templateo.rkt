@@ -43,7 +43,7 @@
          (reduceo t2 t2^)
          (reduceo `(,v1 ,t2^) t^))]
       [(fresh (t1 t1^ x t12 v2 x^ t12^)
-         (templateo t1 t1^)             ; declarative copyterm
+         (templateo t1 t1^)             ; declarative copyterm   
          (== `(,t1 ,v2) t)
          (== `(lambda (,x) ,t12) t1)
          (symbolo x)
