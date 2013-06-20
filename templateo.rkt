@@ -64,7 +64,7 @@
         (== q `(,x ,y ,a ,b))))
     '((_.0 _.0 _.1 _.1)))  
   (test "templateo-reordering-2"
-;;; Previously failing test, courtesy of @namin    
+;;; Previously failing test, courtesy of @namin
     (run* (q)
       (fresh (x y a b)
         (templateo `(,x ,y) `(,a ,b))
@@ -225,7 +225,9 @@
         (reduceo `(((lambda (,x) ,x) (lambda (,y) ,y)) (lambda (,z) ,w)) q)))
     '(((lambda (_.0) _.1) : (sym _.0 _.1))))
   (test "reduceo-16-a"
-;;; show that shadowing isn't handled properly    
+;;; show that shadowing isn't handled properly
+;;; since the resulting term after the beta step isn't legal:
+;;; (lambda ((lambda (,y) ,y)) (lambda (,y) ,y))
     (run* (q)
       (fresh (x y)
         (symbolo x)
@@ -249,7 +251,7 @@
         (reduceo `((lambda (,x) (lambda (,z) ,z)) (lambda (,y) ,y)) q)))
     '(((lambda (_.0) _.0) : (sym _.0))))
   (test "reduceo-17"
-;;; show that shadowing isn't handled properly    
+;;; show that shadowing isn't handled properly
     (run* (q)
       (fresh (x y z w)
         (symbolo x)
