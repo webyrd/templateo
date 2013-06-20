@@ -9,6 +9,8 @@
 
 ;;; Untyped lambda-calculus rules from p.72 of Pierce's 'Types and Programming Languages'.
 ;;;
+;;; This reducer doesn't handle shadowing properly.  Rather, it assumes Barendregt convention.
+;;;
 ;;; Would it be better if templateo took a list of variables to copy, and only copied those?
 ;;; (run* (q ) (fresh (x y) (templateo `(,x) `(lambda (,x) ,y) q))
 ;;; would associate q with `(lambda (,x^) ,y^), where y^ = y, but with any occurrence of x in y lazily replaced with x^.
@@ -222,6 +224,92 @@
         (symbolo w)
         (reduceo `(((lambda (,x) ,x) (lambda (,y) ,y)) (lambda (,z) ,w)) q)))
     '(((lambda (_.0) _.1) : (sym _.0 _.1))))
+  (test "reduceo-16-a"
+;;; show that shadowing isn't handled properly    
+    (run* (q)
+      (fresh (x y)
+        (symbolo x)
+        (symbolo y)
+        (reduceo `((lambda (,x) (lambda (,x) ,x)) (lambda (,y) ,y)) q)))
+    '())
+  (test "reduceo-16-b"
+    (run* (q)
+      (fresh (x y z)
+        (symbolo x)
+        (symbolo y)
+        (symbolo z)
+        (reduceo `((lambda (,x) (lambda (,z) ,x)) (lambda (,y) ,y)) q)))
+    '(((lambda (_.0) (lambda (_.1) _.1)) : (sym _.0 _.1))))
+  (test "reduceo-16-c"
+    (run* (q)
+      (fresh (x y z)
+        (symbolo x)
+        (symbolo y)
+        (symbolo z)        
+        (reduceo `((lambda (,x) (lambda (,z) ,z)) (lambda (,y) ,y)) q)))
+    '(((lambda (_.0) _.0) : (sym _.0))))
+  (test "reduceo-17"
+;;; show that shadowing isn't handled properly    
+    (run* (q)
+      (fresh (x y z w)
+        (symbolo x)
+        (symbolo y)
+        (symbolo z)
+        (symbolo w)
+        (reduceo `(((lambda (,x) (lambda (,x) ,x)) (lambda (,y) ,y)) (lambda (,z) ,w)) q)))
+    '())
+  (test "reduceo-18"
+;;; show that shadowing isn't handled properly    
+    (run* (q)
+      (fresh (x y z)
+        (symbolo x)
+        (symbolo y)
+        (symbolo z)
+        (reduceo `(((lambda (,x) (lambda (,x) ,x)) (lambda (,y) ,y)) (lambda (,y) ,y)) q)))
+    '())
+  (test "reduceo-19"
+    (run* (q)
+      (fresh (x)
+        (symbolo x)
+        (reduceo `(lambda (,x) (lambda (,x) ,x)) q)))
+    '(((lambda (_.0) (lambda (_.0) _.0)) : (sym _.0))))
+  (test "reduceo-20"
+    (run* (q)
+      (fresh (x y z w)
+        (symbolo x)
+        (symbolo y)
+        (symbolo z)
+        (symbolo w)
+        (reduceo `((lambda (,y) (lambda (,x) (lambda (,x) ,x))) (lambda (,z) ,z)) q)))
+    '(((lambda (_.0) (lambda (_.0) _.0)) : (sym _.0))))
+  (test "reduceo-21"
+;;; show that shadowing isn't handled properly    
+    (run* (q)
+      (fresh (x y z w)
+        (symbolo x)
+        (symbolo y)
+        (symbolo z)
+        (symbolo w)
+        (reduceo `((lambda (,y) ((lambda (,x) (lambda (,x) ,x)) ,y)) (lambda (,z) ,z)) q)))
+    '())
+  (test "reduceo-22"
+    (run* (q)
+      (fresh (x y z w)
+        (symbolo x)
+        (symbolo y)
+        (symbolo z)
+        (symbolo w)
+        (reduceo `((lambda (,y) ((lambda (,x) (lambda (,w) ,x)) ,y)) (lambda (,z) ,z)) q)))
+    '(((lambda (_.0) (lambda (_.1) _.1)) : (sym _.0 _.1))))
+  (test "reduceo-23"
+    (run* (q)
+      (fresh (x y z w)
+        (symbolo x)
+        (symbolo y)
+        (symbolo z)
+        (symbolo w)
+        (reduceo `((lambda (,y) ((lambda (,x) (lambda (,w) ,w)) ,y)) (lambda (,z) ,z)) q)))
+    '(((lambda (_.0) _.0) : (sym _.0))))
 
   ;; (test "reduceo-omega"
   ;;   ; diverges, as it should!!    
