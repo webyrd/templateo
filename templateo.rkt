@@ -9,9 +9,6 @@
 
 ;;; Untyped lambda-calculus rules from p.72 of Pierce's 'Types and Programming Languages'.
 ;;;
-;;; This approach doesn't to work in general.  For example,
-;;; reducing ((lambda (_.0) _.1) (lambda (_.2) _.3)) yields (lambda (_.4) _.5)
-;;;
 ;;; Would it be better if templateo took a list of variables to copy, and only copied those?
 ;;; (run* (q ) (fresh (x y) (templateo `(,x) `(lambda (,x) ,y) q))
 ;;; would associate q with `(lambda (,x^) ,y^), where y^ = y, but with any occurrence of x in y lazily replaced with x^.
