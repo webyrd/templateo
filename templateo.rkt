@@ -659,6 +659,10 @@
     (run* (q) (!- '() '(let ((f (lambda (x) x))) (f (zero? (f 5)))) q))
     '(bool))
 
+  (test "!-21"
+    (run* (q) (!- '() '(let ((f (lambda (x) x))) f) q))
+    '((-> _.0 _.0)))
+  
   (test "!-19"
     (run 1 (q) (fresh (lam) (== `(let ((f ,lam)) (f (f 5))) q)) (!- '() q 'int))
     '(((let ((f (lambda (_.0) _.1))) (f (f 5))) : (num _.1))))
