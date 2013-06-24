@@ -463,5 +463,10 @@
   (test "!-16"
     (run* (q) (!- '() '(let ((f (lambda (x) (x x)))) 3) q))
     '())
+
+  (test "!-17"
+;;; test from http://okmij.org/ftp/ML/generalization.html    
+    (run* (q) (!- '() '(lambda (x) (let ((y x)) y)) q))
+    '((-> _.0 _.0)))
   
 )
