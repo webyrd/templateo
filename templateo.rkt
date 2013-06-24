@@ -89,7 +89,7 @@
          (== `(-> ,t1 ,t2) t)
          (!- `((,x . ,t1) . ,gamma) body t2))]
       [(fresh (e1 e2)
-         (== `(* ,e1 e2) e)
+         (== `(* ,e1 ,e2) e)
          (== 'int t)
          (!- gamma e1 'int)
          (!- gamma e2 'int))]      
@@ -420,5 +420,17 @@
   (test "!-8"
     (run* (q) (!- '() '(zero? (sub1 5)) q))
     '(bool))
+  
+  (test "!-9"
+    (run* (q) (!- '() '(* 3 (sub1 5)) q))
+    '(int))
+
+  (test "!-10"
+    (run* (q) (!- '() '(if #t 3 4) q))
+    '(int))
+  
+  (test "!-11"
+    (run* (q) (!- '() '(if (zero? (sub1 5)) (* 3 4) (sub1 6)) q))
+    '(int))
   
 )
