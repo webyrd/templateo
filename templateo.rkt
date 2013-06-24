@@ -475,6 +475,60 @@
 ;;; test from http://okmij.org/ftp/ML/generalization.html
     (run* (q) (!- '() '(lambda (x) (let ((y (lambda (z) z))) y)) q))
     '((-> _.0 (-> _.1 _.1))))
+
+  (test "templateo-99a"
+    (run* (q)
+      (fresh (x xt y g g^)
+        (== `((,x ,xt) (,y ,xt)) g)
+        (== g g^)
+        (templateo `(,g ,xt) `(,g^ ,xt))
+        (== `(,x ,xt ,y ,g ,g^) q)))
+    '((_.0 _.1 _.2 ((_.0 _.1) (_.2 _.1)) ((_.0 _.1) (_.2 _.1)))))
+
+  (test "templateo-99b"
+    (run* (q)
+      (fresh (x xt y g g^)
+        (== `((,x ,xt) (,y ,xt)) g)
+        (templateo `(,g ,xt) `(,g^ ,xt))
+        (== g g^)
+        (== `(,x ,xt ,y ,g ,g^) q)))
+    '((_.0 _.1 _.2 ((_.0 _.1) (_.2 _.1)) ((_.0 _.1) (_.2 _.1)))))  
+
+  (test "templateo-99c"
+    (run* (q)
+      (fresh (x xt y g g^)
+        (templateo `(,g ,xt) `(,g^ ,xt))
+        (== `((,x ,xt) (,y ,xt)) g)
+        (== g g^)
+        (== `(,x ,xt ,y ,g ,g^) q)))
+    '((_.0 _.1 _.2 ((_.0 _.1) (_.2 _.1)) ((_.0 _.1) (_.2 _.1)))))
+   
+  (test "templateo-99d"
+    (run* (q)
+      (fresh (x xt y g g^)
+        (templateo `(,g ,xt) `(,g^ ,xt))
+        (== `((,x ,xt) (,y ,xt)) g)
+        (== `(,x ,xt ,y ,g ,g^) q)
+        (== g g^)))
+    '((_.0 _.1 _.2 ((_.0 _.1) (_.2 _.1)) ((_.0 _.1) (_.2 _.1)))))
+
+  (test "templateo-99e"
+    (run* (q)
+      (fresh (x xt y g g^)
+        (== `((,x ,xt) (,y ,xt)) g)
+        (== `(,x ,xt ,y ,g ,g^) q)
+        (== g g^)
+        (templateo `(,g ,xt) `(,g^ ,xt))))
+    '((_.0 _.1 _.2 ((_.0 _.1) (_.2 _.1)) ((_.0 _.1) (_.2 _.1)))))
+
+  (test "templateo-99f"
+    (run* (q)
+      (fresh (x xt y g g^)
+        (== g g^)
+        (== `((,x ,xt) (,y ,xt)) g)
+        (== `(,x ,xt ,y ,g ,g^) q)
+        (templateo `(,g ,xt) `(,g^ ,xt))))
+    '((_.0 _.1 _.2 ((_.0 _.1) (_.2 _.1)) ((_.0 _.1) (_.2 _.1)))))  
   
   (test "!-17"
 ;;; test from http://okmij.org/ftp/ML/generalization.html
