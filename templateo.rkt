@@ -630,6 +630,34 @@
         (== `((x ,t1)) g)
         (== `(,x ,t ,t1 ,t2 ,t^ ,g ,g^) q)))
     '((_.0 (-> _.1 _.2) _.1 _.2 (-> _.1 _.3) ((x _.1)) ((x _.1)))))  
+
+  (test "!-15a"
+    (run* (q) (!- '() '(let ((f (lambda (x) x))) (f 5)) q))
+    '(int))
+
+  (test "!-15b"
+    (run* (q) (!- '() '(let ((f (lambda (x) x))) (f #t)) q))
+    '(bool))
+
+  (test "!-15c"
+    (run* (q) (!- '() '(let ((f (lambda (x) x))) (f (zero? 5))) q))
+    '(bool))
+
+  (test "!-15d"
+    (run* (q) (!- '() '(let ((f (lambda (x) x))) (f (f (zero? 5)))) q))
+    '(bool))
+
+  (test "!-15e"
+    (run* (q) (!- '() '(let ((f (lambda (x) x))) (f (f (sub1 5)))) q))
+    '(int))
+
+  (test "!-15f"
+    (run* (q) (!- '() '(let ((f (lambda (x) x))) (if (f 5) (f 6) (f 7))) q))
+    '())
+  
+  (test "!-15g"
+    (run* (q) (!- '() '(let ((f (lambda (x) x))) (if (f #t) (f 6) (f 7))) q))
+    '())
   
   (test "!-15"
     (run* (q) (!- '() '(let ((f (lambda (x) x))) (f (zero? (f 5)))) q))
