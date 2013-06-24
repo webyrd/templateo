@@ -53,6 +53,33 @@
          (reduceo t12^ t^))])))
 
 
+
+;;; type inferencer for Hindley-Milner, with polymorphic 'let' using templateo.
+;;;
+;;; Rules from pages 103, 126, and 333 of Pierce.
+
+(define lookupo
+  (lambda (gamma x t)
+    (fresh (x^ t^ gamma^)
+      (== `((,x^ . ,t^) . ,gamma^) gamma)
+      (conde
+        [(== x x^) (== t t^)]
+        [(=/= x x^) (lookupo gamma^ x t)]))))
+
+(define !-
+  (lambda (gamma e t)
+    (conde
+      [(symbolo e) (lookupo gamma e t)]
+      [(fresh (x body t1 t2)
+         (== `(lambda (,x) ,body) e)
+         (== `(-> ,t1 ,t2) t)
+         (!- `((,x . ,t1) . ,gamma) body t2))]
+      [(fresh (e1 e2 t1)
+         (== `(,e1 ,e2) e)
+         (!- gamma e1 `(-> ,t1 ,t))
+         (!- gamma e2 t1))])))
+
+
 (module+ test
   (require cKanren/tester)
 
@@ -317,4 +344,41 @@
   ;;   ; diverges, as it should!!    
   ;;   (run 1 (q) (fresh (x y) (reduceo `((lambda (,x) ((,x ,x) (,x ,x))) (lambda (,y) ((,y ,y) (,y ,y)))) q)))
   ;;   'bottom)
+
+  (test "lookupo-1"
+    (run* (q) (lookupo `((x . int) (y . bool) (x . bool)) 'x q))
+    '(int))
+
+  (test "lookupo-2"
+    (run* (q) (fresh (x) (lookupo `((x . int) (y . bool) (x . bool)) x q)))
+    '(int bool))
+
+  (test "lookupo-3"
+    (run* (q) (lookupo `((x . int) (y . bool) (x . bool)) 'z q))
+    '())
+
+  (test "lookupo-4"
+    (run 5 (q) (fresh (gamma x t) (lookupo gamma x t) (== `(,gamma ,x ,t) q)))
+    '((((_.0 . _.1) . _.2) _.0 _.1)
+      ((((_.0 . _.1) (_.2 . _.3) . _.4) _.2 _.3) : (=/= ((_.0 . _.2))))
+      ((((_.0 . _.1) (_.2 . _.3) (_.4 . _.5) . _.6) _.4 _.5) : (=/= ((_.0 . _.4)) ((_.2 . _.4))))
+      ((((_.0 . _.1) (_.2 . _.3) (_.4 . _.5) (_.6 . _.7) . _.8) _.6 _.7) : (=/= ((_.0 . _.6)) ((_.2 . _.6)) ((_.4 . _.6))))
+      ((((_.0 . _.1) (_.2 . _.3) (_.4 . _.5) (_.6 . _.7) (_.8 . _.9) . _.10) _.8 _.9) : (=/= ((_.0 . _.8)) ((_.2 . _.8)) ((_.4 . _.8)) ((_.6 . _.8))))))
+
+  (test "!-1"
+    (run* (q) (!- '() '(lambda (y) y) q))
+    '((-> _.0 _.0)))
+
+  (test "!-2"
+    (run* (q) (!- '() '((lambda (y) y) (lambda (z) z)) q))
+    '((-> _.0 _.0)))
+
+  (test "!-3"
+    (run* (q) (!- '() '((lambda (y) y) (lambda (z) (lambda (w) (w z)))) q))
+    '((-> _.0 (-> (-> _.0 _.1) _.1))))
+
+  (test "!-4"
+    (run* (q) (!- '() '(lambda (y) (y y)) q))
+    '())
+  
 )
