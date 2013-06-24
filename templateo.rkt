@@ -71,15 +71,28 @@
   (lambda (gamma e t)
     (conde
       [(numbero e) (== 'int t)]
-      [(symbolo e) (lookupo gamma e t)]
+      [(symbolo e) (lookupo gamma e t)]     
       [(conde
          [(== #t e)]
          [(== #f e)])
        (== 'bool t)]
+      [(fresh (e1)
+         (== `(zero? ,e1) e)
+         (== 'bool t)
+         (!- gamma e1 'int))]
+      [(fresh (e1)
+         (== `(sub1 ,e1) e)
+         (== 'int t)
+         (!- gamma e1 'int))]      
       [(fresh (x body t1 t2)
          (== `(lambda (,x) ,body) e)
          (== `(-> ,t1 ,t2) t)
          (!- `((,x . ,t1) . ,gamma) body t2))]
+      [(fresh (e1 e2)
+         (== `(* ,e1 e2) e)
+         (== 'int t)
+         (!- gamma e1 'int)
+         (!- gamma e2 'int))]      
       [(fresh (e1 e2 t1)
          (== `(,e1 ,e2) e)
          (!- gamma e1 `(-> ,t1 ,t))
