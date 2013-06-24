@@ -657,7 +657,7 @@
   
   (test "!-15g"
     (run* (q) (!- '() '(let ((f (lambda (x) x))) (if (f #t) (f 6) (f 7))) q))
-    '())
+    '(int))
   
   (test "!-15"
     (run* (q) (!- '() '(let ((f (lambda (x) x))) (f (zero? (f 5)))) q))
