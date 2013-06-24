@@ -467,17 +467,29 @@
     (run* (q) (!- '() '(let ((f (lambda (x) (x x)))) 3) q))
     '())
   
-  (test "!-15"
-    (run* (q) (!- '() '(let ((f (lambda (x) x))) (f (zero? (f 5)))) q))
-    '(bool))
 
   (test "!-18"
 ;;; test from http://okmij.org/ftp/ML/generalization.html
     (run* (q) (!- '() '(lambda (x) (let ((y (lambda (z) z))) y)) q))
     '((-> _.0 (-> _.1 _.1))))
 
-
-
+  (test "16.1"
+    (run* (q)
+      (fresh (x g g^ t t^)
+        (templateo `(,g ,t) `(,g^ ,t^))
+        (== `(,t) g)
+        (== g g^)
+        (== `(,t ,t^) q)))
+    '((_.0 _.0)))
+ 
+  (test "16.3"
+    (run* (q)
+      (fresh (x g g^ t t^)
+        (== g g^)
+        (== `(,t) g)
+        (templateo `(,g ,t) `(,g^ ,t^))
+        (== `(,t ,t^) q)))
+    '((_.0 _.0)))
   
   (test "templateo-96a"
     (run* (q)
@@ -574,27 +586,12 @@
         (== `(,x ,xt ,y ,yt ,g ,g^ ,t ,t^) q)))
     '((_.0 _.1 _.2 _.3 ((_.0 _.1) (_.2 _.3)) ((_.0 _.1) (_.2 _.3)) _.4 _.5)))
 
+  (test "!-17"
+;;; test from http://okmij.org/ftp/ML/generalization.html
+    (run* (q) (!- '() '(lambda (x) (let ((y x)) y)) q))
+    '((-> _.0 _.0)))
+
   (test "templateo-97a"
-    (run* (q)
-      (fresh (x g g^ t t^ t1 t2)
-        (== g g^)
-        (== `(-> ,t1 ,t2) t)
-        (templateo `(,g ,t) `(,g^ ,t^))
-        (== `((x ,t1)) g)
-        (== `(,x ,t ,t1 ,t2 ,t^ ,g ,g^) q)))
-    '((_.0 (-> _.1 _.2) _.1 _.2 (-> _.3 _.4) ((x _.1)) ((x _.1)))))
-
-  (test "templateo-97b"
-    (run* (q)
-      (fresh (x g g^ t t^ t1 t2)
-        (templateo `(,g ,t) `(,g^ ,t^))
-        (== g g^)
-        (== `(-> ,t1 ,t2) t)
-        (== `((x ,t1)) g)
-        (== `(,x ,t ,t1 ,t2 ,t^ ,g ,g^) q)))
-    '((_.0 (-> _.1 _.2) _.1 _.2 (-> _.3 _.4) ((x _.1)) ((x _.1)))))
-
-  (test "templateo-97c"
     (run* (q)
       (fresh (x g g^ t t^ t1 t2)
         (== g g^)
@@ -602,9 +599,9 @@
         (== `((x ,t1)) g)
         (== `(,x ,t ,t1 ,t2 ,t^ ,g ,g^) q)
         (templateo `(,g ,t) `(,g^ ,t^))))
-    '((_.0 (-> _.1 _.2) _.1 _.2 (-> _.3 _.4) ((x _.1)) ((x _.1)))))
+    '((_.0 (-> _.1 _.2) _.1 _.2 (-> _.1 _.3) ((x _.1)) ((x _.1)))))
 
-  (test "templateo-97d"
+  (test "templateo-97b"
     (run* (q)
       (fresh (x g g^ t t^ t1 t2)
         (templateo `(,g ,t) `(,g^ ,t^))
@@ -612,11 +609,30 @@
         (== `((x ,t1)) g)
         (== `(,x ,t ,t1 ,t2 ,t^ ,g ,g^) q)
         (== g g^)))
-    '((_.0 (-> _.1 _.2) _.1 _.2 (-> _.3 _.4) ((x _.1)) ((x _.1)))))  
+    '((_.0 (-> _.1 _.2) _.1 _.2 (-> _.1 _.3) ((x _.1)) ((x _.1)))))
+  
+  (test "templateo-97c"
+    (run* (q)
+      (fresh (x g g^ t t^ t1 t2)
+        (== g g^)
+        (== `(-> ,t1 ,t2) t)
+        (templateo `(,g ,t) `(,g^ ,t^))
+        (== `((x ,t1)) g)
+        (== `(,x ,t ,t1 ,t2 ,t^ ,g ,g^) q)))
+    '((_.0 (-> _.1 _.2) _.1 _.2 (-> _.1 _.3) ((x _.1)) ((x _.1)))))
 
-  (test "!-17"
-;;; test from http://okmij.org/ftp/ML/generalization.html
-    (run* (q) (!- '() '(lambda (x) (let ((y x)) y)) q))
-    '((-> _.0 _.0)))
-
+  (test "templateo-97d"
+    (run* (q)
+      (fresh (x g g^ t t^ t1 t2)
+        (templateo `(,g ,t) `(,g^ ,t^))
+        (== g g^)
+        (== `(-> ,t1 ,t2) t)
+        (== `((x ,t1)) g)
+        (== `(,x ,t ,t1 ,t2 ,t^ ,g ,g^) q)))
+    '((_.0 (-> _.1 _.2) _.1 _.2 (-> _.1 _.3) ((x _.1)) ((x _.1)))))  
+  
+  (test "!-15"
+    (run* (q) (!- '() '(let ((f (lambda (x) x))) (f (zero? (f 5)))) q))
+    '(bool))
+  
 )
