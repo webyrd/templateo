@@ -77,13 +77,8 @@
          (conde
            [(== 'non-generic tag) (== t^ t)]
            [(== 'generic tag)
-
-            (== gamma gamma^)  ;;; badness: moving this unification after the templateo call causes !-15 to fail instead of !-17
-                               ;;; seems like templateo is behaving non-relationally, or I'm confused
-            
             (templateo `(,gamma ,t^) `(,gamma^ ,t)) ;; copy the generic template
-            
-            ]))]
+            (== gamma gamma^)]))]
       [(conde
          [(== #t e)]
          [(== #f e)])
