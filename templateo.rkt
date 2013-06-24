@@ -529,6 +529,42 @@
         (== `(,x ,xt ,y ,g ,g^) q)
         (templateo `(,g ,xt) `(,g^ ,xt))))
     '((_.0 _.1 _.2 ((_.0 _.1) (_.2 _.1)) ((_.0 _.1) (_.2 _.1)))))  
+
+  (test "templateo-98a"
+    (run* (q)
+      (fresh (x xt y yt g g^ t t^)
+        (== g g^)
+        (== `((,x ,xt) (,y ,yt)) g)
+        (== `(,x ,xt ,y ,yt ,g ,g^ ,t ,t^) q)
+        (templateo `(,g ,t) `(,g^ ,t^))))
+    '((_.0 _.1 _.2 _.3 ((_.0 _.1) (_.2 _.3)) ((_.0 _.1) (_.2 _.3)) _.4 _.5)))
+
+  (test "templateo-98b"
+    (run* (q)
+      (fresh (x xt y yt g g^ t t^)
+        (templateo `(,g ,t) `(,g^ ,t^))
+        (== g g^)
+        (== `((,x ,xt) (,y ,yt)) g)
+        (== `(,x ,xt ,y ,yt ,g ,g^ ,t ,t^) q)))
+    '((_.0 _.1 _.2 _.3 ((_.0 _.1) (_.2 _.3)) ((_.0 _.1) (_.2 _.3)) _.4 _.5)))
+
+  (test "templateo-97a"
+    (run* (q)
+      (fresh (x xt g g^ t^)
+        (== g g^)
+        (templateo `(,g (let ((y x)) y)) `(,g^ ,t^))
+        (== `((x ,xt)) g)
+        (== `(,x ,xt ,g ,g^ ,t^) q)))
+    '((_.0 _.1 ((x _.1)) ((x _.1)) (let ((y x)) y))))
+
+  (test "templateo-97b"
+    (run* (q)
+      (fresh (x xt g g^ t^)
+        (templateo `(,g (let ((y x)) y)) `(,g^ ,t^))
+        (== g g^)
+        (== `((x ,xt)) g)
+        (== `(,x ,xt ,g ,g^ ,t^) q)))
+    '((_.0 _.1 ((x _.1)) ((x _.1)) (let ((y x)) y))))  
   
   (test "!-17"
 ;;; test from http://okmij.org/ftp/ML/generalization.html
