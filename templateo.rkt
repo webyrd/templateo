@@ -69,6 +69,7 @@
 (define !-
   (lambda (gamma e t)
     (conde
+      [(numbero e) (== 'int t)]
       [(symbolo e) (lookupo gamma e t)]
       [(fresh (x body t1 t2)
          (== `(lambda (,x) ,body) e)
@@ -380,5 +381,9 @@
   (test "!-4"
     (run* (q) (!- '() '(lambda (y) (y y)) q))
     '())
+
+  (test "!-5"
+    (run* (q) (!- '() '5 q))
+    '(int))
   
 )
