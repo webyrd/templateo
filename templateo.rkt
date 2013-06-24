@@ -412,5 +412,13 @@
   (test "!-6"
     (run* (q) (!- '() '#t q))
     '(bool))
+
+  (test "!-7"
+    (run* (q) (!- '() '(zero? 5) q))
+    '(bool))
+
+  (test "!-8"
+    (run* (q) (!- '() '(zero? (sub1 5)) q))
+    '(bool))
   
 )
