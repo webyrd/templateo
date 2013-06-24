@@ -651,6 +651,10 @@
     (run* (q) (!- '() '(let ((f (lambda (x) x))) (f (f (sub1 5)))) q))
     '(int))
 
+  (test "!-15h"
+    (run* (q) (!- '() '(let ((f (lambda (x) x))) (f (f 5))) q))
+    '(int))
+  
   (test "!-15f"
     (run* (q) (!- '() '(let ((f (lambda (x) x))) (if (f 5) (f 6) (f 7))) q))
     '())
