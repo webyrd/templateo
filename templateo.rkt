@@ -56,7 +56,7 @@
 
 ;;; type inferencer for Hindley-Milner, with polymorphic 'let' using templateo.
 ;;;
-;;; Rules from pages 103, 126, and 333 of Pierce.
+;;; Rules from pages 103 and 333 of Pierce.
 
 (define lookupo
   (lambda (gamma x t)
@@ -66,11 +66,16 @@
         [(== x x^) (== t t^)]
         [(=/= x x^) (lookupo gamma^ x t)]))))
 
+;;; ** be careful with shadowing, and overlapping of application **
 (define !-
   (lambda (gamma e t)
     (conde
       [(numbero e) (== 'int t)]
       [(symbolo e) (lookupo gamma e t)]
+      [(conde
+         [(== #t e)]
+         [(== #f e)])
+       (== 'bool t)]
       [(fresh (x body t1 t2)
          (== `(lambda (,x) ,body) e)
          (== `(-> ,t1 ,t2) t)
@@ -78,7 +83,12 @@
       [(fresh (e1 e2 t1)
          (== `(,e1 ,e2) e)
          (!- gamma e1 `(-> ,t1 ,t))
-         (!- gamma e2 t1))])))
+         (!- gamma e2 t1))]
+      [(fresh (e1 e2 e3)
+         (== `(if ,e1 ,e2 ,e3) e)
+         (!- gamma e1 'bool)
+         (!- gamma e2 t)
+         (!- gamma e3 t))])))
 
 
 (module+ test
@@ -385,5 +395,9 @@
   (test "!-5"
     (run* (q) (!- '() '5 q))
     '(int))
+
+  (test "!-6"
+    (run* (q) (!- '() '#t q))
+    '(bool))
   
 )
