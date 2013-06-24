@@ -59,12 +59,12 @@
 ;;; Rules from pages 103 and 333 of Pierce.
 
 (define lookupo
-  (lambda (gamma x t tag)
+  (lambda (gamma x t tag old-gamma)
     (fresh (x^ t^ gamma^)
-      (== `((,tag ,x^ ,t^) . ,gamma^) gamma)
+      (== `((,tag ,x^ ,t^ . ,old-gamma) . ,gamma^) gamma)
       (conde
         [(== x x^) (== t t^)]
-        [(=/= x x^) (lookupo gamma^ x t tag)]))))
+        [(=/= x x^) (lookupo gamma^ x t tag old-gamma)]))))
 
 ;;; ** be careful with shadowing, and overlapping of application **
 (define !-
@@ -72,13 +72,13 @@
     (conde
       [(numbero e) (== 'int t)]
       [(symbolo e)
-       (fresh (tag t^ gamma^)
-         (lookupo gamma e t^ tag)
+       (fresh (tag t^ old-gamma old-gamma^)
+         (lookupo gamma e t^ tag old-gamma)
          (conde
            [(== 'non-generic tag) (== t^ t)]
            [(== 'generic tag)
-            (templateo `(,gamma ,t^) `(,gamma^ ,t)) ;; copy the generic template
-            (== gamma gamma^)]))]
+            (templateo `(,old-gamma ,t^) `(,old-gamma^ ,t)) ;; copy the generic template
+            (== old-gamma old-gamma^)]))]
       [(conde
          [(== #t e)]
          [(== #f e)])
@@ -99,13 +99,13 @@
       [(fresh (x e1 body t1) ; polymorphic let
          (== `(let ((,x ,e1)) ,body) e)
          (!- gamma e1 t1) ; make sure 'e1' has a valid type, regardless of whether 'x' appears in 'body'
-         (!- `((generic ,x ,t1) . ,gamma) body t))]
+         (!- `((generic ,x ,t1 . ,gamma) . ,gamma) body t))]
 ;;;
       [(fresh (e1 e2)
          (== `(* ,e1 ,e2) e)
          (== 'int t)
          (!- gamma e1 'int)
-         (!- gamma e2 'int))]      
+         (!- gamma e2 'int))]
       [(fresh (e1 e2 t1)
          (== `(,e1 ,e2) e)
          (!- gamma e1 `(-> ,t1 ,t))
@@ -383,25 +383,22 @@
   ;;   'bottom)
 
   (test "lookupo-1"
-    (run* (q) (lookupo `((non-generic x int) (non-generic y bool) (non-generic x bool)) 'x q 'non-generic))
+    (run* (q) (lookupo `((non-generic x int) (non-generic y bool) (non-generic x bool)) 'x q 'non-generic '()))
     '(int))
 
   (test "lookupo-2"
-    (run* (q) (fresh (x) (lookupo `((non-generic x int) (non-generic y bool) (non-generic x bool)) x q 'non-generic)))
+    (run* (q) (fresh (x) (lookupo `((non-generic x int) (non-generic y bool) (non-generic x bool)) x q 'non-generic '())))
     '(int bool))
 
   (test "lookupo-3"
-    (run* (q) (lookupo `((non-generic x int) (non-generic y bool) (non-generic x bool)) 'z q 'non-generic))
+    (run* (q) (lookupo `((non-generic x int) (non-generic y bool) (non-generic x bool)) 'z q 'non-generic '()))
     '())
 
   (test "lookupo-4"
-    (run 5 (q) (fresh (gamma x t tag) (lookupo gamma x t tag) (== `(,gamma ,x ,t ,tag) q)))
-    '((((_.0 _.1 _.2) . _.3) _.1 _.2 _.0)
-      ((((_.0 _.1 _.2) (_.0 _.3 _.4) . _.5) _.3 _.4 _.0) : (=/= ((_.1 . _.3))))
-      ((((_.0 _.1 _.2) (_.0 _.3 _.4) (_.0 _.5 _.6) . _.7) _.5 _.6 _.0) : (=/= ((_.1 . _.5)) ((_.3 . _.5))))
-      ((((_.0 _.1 _.2) (_.0 _.3 _.4) (_.0 _.5 _.6) (_.0 _.7 _.8) . _.9) _.7 _.8 _.0) : (=/= ((_.1 . _.7)) ((_.3 . _.7)) ((_.5 . _.7))))
-      ((((_.0 _.1 _.2) (_.0 _.3 _.4) (_.0 _.5 _.6) (_.0 _.7 _.8) (_.0 _.9 _.10) . _.11) _.9 _.10 _.0) : (=/= ((_.1 . _.9)) ((_.3 . _.9)) ((_.5 . _.9)) ((_.7 . _.9))))))
+    (run 5 (q) (fresh (gamma x t tag old-gamma) (lookupo gamma x t tag old-gamma) (== `(,gamma ,x ,t ,tag ,old-gamma) q)))
+    '((((_.0 _.1 _.2 . _.3) . _.4) _.1 _.2 _.0 _.3) ((((_.0 _.1 _.2 . _.3) (_.0 _.4 _.5 . _.3) . _.6) _.4 _.5 _.0 _.3) : (=/= ((_.1 . _.4)))) ((((_.0 _.1 _.2 . _.3) (_.0 _.4 _.5 . _.3) (_.0 _.6 _.7 . _.3) . _.8) _.6 _.7 _.0 _.3) : (=/= ((_.1 . _.6)) ((_.4 . _.6)))) ((((_.0 _.1 _.2 . _.3) (_.0 _.4 _.5 . _.3) (_.0 _.6 _.7 . _.3) (_.0 _.8 _.9 . _.3) . _.10) _.8 _.9 _.0 _.3) : (=/= ((_.1 . _.8)) ((_.4 . _.8)) ((_.6 . _.8)))) ((((_.0 _.1 _.2 . _.3) (_.0 _.4 _.5 . _.3) (_.0 _.6 _.7 . _.3) (_.0 _.8 _.9 . _.3) (_.0 _.10 _.11 . _.3) . _.12) _.10 _.11 _.0 _.3) : (=/= ((_.1 . _.10)) ((_.10 . _.4)) ((_.10 . _.6)) ((_.10 . _.8))))))
 
+  
   (test "!-1"
     (run* (q) (!- '() '(lambda (y) y) q))
     '((-> _.0 _.0)))
