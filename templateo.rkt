@@ -72,11 +72,18 @@
     (conde
       [(numbero e) (== 'int t)]
       [(symbolo e)
-       (fresh (tag t^)
+       (fresh (tag t^ gamma^)
          (lookupo gamma e t^ tag)
          (conde
            [(== 'non-generic tag) (== t^ t)]
-           [(== 'generic tag) (templateo t^ t)]))] ;; copy the generic template
+           [(== 'generic tag)
+
+            (== gamma gamma^)  ;;; badness: moving this unification after the templateo call causes !-15 to fail instead of !-17
+                               ;;; seems like templateo is behaving non-relationally, or I'm confused
+            
+            (templateo `(,gamma ,t^) `(,gamma^ ,t)) ;; copy the generic template
+            
+            ]))]
       [(conde
          [(== #t e)]
          [(== #f e)])
@@ -456,17 +463,17 @@
     (run* (q) (!- '() '(let ((f (lambda (x) x))) (f 5)) q))
     '(int))
 
-  (test "!-15"
-    (run* (q) (!- '() '(let ((f (lambda (x) x))) (f (zero? (f 5)))) q))
-    '(bool))
-
   (test "!-16"
     (run* (q) (!- '() '(let ((f (lambda (x) (x x)))) 3) q))
     '())
+  
+  (test "!-15"
+    (run* (q) (!- '() '(let ((f (lambda (x) x))) (f (zero? (f 5)))) q))
+    '(bool))
 
   (test "!-17"
 ;;; test from http://okmij.org/ftp/ML/generalization.html    
     (run* (q) (!- '() '(lambda (x) (let ((y x)) y)) q))
     '((-> _.0 _.0)))
-  
+
 )
