@@ -56,26 +56,30 @@
 
 ;;; type inferencer for Hindley-Milner, with polymorphic 'let' using templateo.
 ;;;
-;;; Rules from pages 103 and 333 of Pierce.
+;;; Rules from pages 103 and 333 of Pierce.  Also, http://okmij.org/ftp/ML/generalization.html
 
 (define lookupo
-  (lambda (gamma x t tag old-gamma)
-    (fresh (x^ t^ gamma^)
-      (== `((,tag ,x^ ,t^ . ,old-gamma) . ,gamma^) gamma)
+  (lambda (gamma x t tag old-gamma)    
+    (fresh (x^ t^ tag^ gamma^ old-gamma^)      
+      (== `((,tag^ ,x^ ,t^ . ,old-gamma^) . ,gamma^) gamma)      
       (conde
-        [(== x x^) (== t t^)]
-        [(=/= x x^) (lookupo gamma^ x t tag old-gamma)]))))
+        [(== x x^)
+         (== t t^)
+         (== tag tag^)
+         (== old-gamma^ old-gamma)]
+        [(=/= x x^)
+         (lookupo gamma^ x t tag old-gamma)]))))
 
-;;; ** be careful with shadowing, and overlapping of application **
 (define !-
   (lambda (gamma e t)
     (conde
       [(numbero e) (== 'int t)]
       [(symbolo e)
-       (fresh (tag t^ old-gamma old-gamma^)
+       (fresh (tag t^ old-gamma old-gamma^)         
          (lookupo gamma e t^ tag old-gamma)
          (conde
-           [(== 'non-generic tag) (== t^ t)]
+           [(== 'non-generic tag)
+            (== t^ t)]
            [(== 'generic tag)
             (templateo `(,old-gamma ,t^) `(,old-gamma^ ,t)) ;; copy the generic template
             (== old-gamma old-gamma^)]))]
@@ -100,12 +104,13 @@
          (== `(-> ,t1 ,t2) t)
          (!- `((non-generic ,x ,t1) . ,gamma) body t2))]
 ;;;
-      [(fresh (x e1 body t1) ; polymorphic let
+      [(fresh (x e1 body t1 gamma^) ; polymorphic let
          (== `(let ((,x ,e1)) ,body) e)
          (symbolo x)
          (absento 'let gamma)
          (!- gamma e1 t1) ; make sure 'e1' has a valid type, regardless of whether 'x' appears in 'body'
-         (!- `((generic ,x ,t1 . ,gamma) . ,gamma) body t))]
+         (== `((generic ,x ,t1 . ,gamma) . ,gamma) gamma^)         
+         (!- gamma^ body t))]
 ;;;
       [(fresh (e1 e2)
          (== `(* ,e1 ,e2) e)
@@ -404,7 +409,11 @@
 
   (test "lookupo-4"
     (run 5 (q) (fresh (gamma x t tag old-gamma) (lookupo gamma x t tag old-gamma) (== `(,gamma ,x ,t ,tag ,old-gamma) q)))
-    '((((_.0 _.1 _.2 . _.3) . _.4) _.1 _.2 _.0 _.3) ((((_.0 _.1 _.2 . _.3) (_.0 _.4 _.5 . _.3) . _.6) _.4 _.5 _.0 _.3) : (=/= ((_.1 . _.4)))) ((((_.0 _.1 _.2 . _.3) (_.0 _.4 _.5 . _.3) (_.0 _.6 _.7 . _.3) . _.8) _.6 _.7 _.0 _.3) : (=/= ((_.1 . _.6)) ((_.4 . _.6)))) ((((_.0 _.1 _.2 . _.3) (_.0 _.4 _.5 . _.3) (_.0 _.6 _.7 . _.3) (_.0 _.8 _.9 . _.3) . _.10) _.8 _.9 _.0 _.3) : (=/= ((_.1 . _.8)) ((_.4 . _.8)) ((_.6 . _.8)))) ((((_.0 _.1 _.2 . _.3) (_.0 _.4 _.5 . _.3) (_.0 _.6 _.7 . _.3) (_.0 _.8 _.9 . _.3) (_.0 _.10 _.11 . _.3) . _.12) _.10 _.11 _.0 _.3) : (=/= ((_.1 . _.10)) ((_.10 . _.4)) ((_.10 . _.6)) ((_.10 . _.8))))))
+    '((((_.0 _.1 _.2 . _.3) . _.4) _.1 _.2 _.0 _.3)
+      ((((_.0 _.1 _.2 . _.3) (_.4 _.5 _.6 . _.7) . _.8) _.5 _.6 _.4 _.7) : (=/= ((_.1 . _.5))))
+      ((((_.0 _.1 _.2 . _.3) (_.4 _.5 _.6 . _.7) (_.8 _.9 _.10 . _.11) . _.12) _.9 _.10 _.8 _.11) : (=/= ((_.1 . _.9)) ((_.5 . _.9))))
+      ((((_.0 _.1 _.2 . _.3) (_.4 _.5 _.6 . _.7) (_.8 _.9 _.10 . _.11) (_.12 _.13 _.14 . _.15) . _.16) _.13 _.14 _.12 _.15) : (=/= ((_.1 . _.13)) ((_.13 . _.5)) ((_.13 . _.9))))
+      ((((_.0 _.1 _.2 . _.3) (_.4 _.5 _.6 . _.7) (_.8 _.9 _.10 . _.11) (_.12 _.13 _.14 . _.15) (_.16 _.17 _.18 . _.19) . _.20) _.17 _.18 _.16 _.19) : (=/= ((_.1 . _.17)) ((_.13 . _.17)) ((_.17 . _.5)) ((_.17 . _.9))))))
 
   
   (test "!-1"
@@ -679,10 +688,6 @@
     (run 1 (q) (fresh (lam) (== `(let ((f ,lam)) (if (f #t) (f 6) (f 7))) q)) (!- '() q 'int))
     '(((let ((f (lambda (_.0) _.0))) (if (f #t) (f 6) (f 7))) : (sym _.0))))
   
-  (test "!-18"
-    (run 50 (q) (!- '() q 'int))
-    '((_.0 : (num _.0)) ((sub1 _.0) : (num _.0)) ((let ((_.0 _.1)) _.2) : (num _.1 _.2) (sym _.0)) ((sub1 (sub1 _.0)) : (num _.0)) ((* _.0 _.1) : (num _.0 _.1)) ((sub1 (let ((_.0 _.1)) _.2)) : (num _.1 _.2) (sym _.0)) ((sub1 (sub1 (sub1 _.0))) : (num _.0)) ((let ((_.0 #t)) _.1) : (num _.1) (sym _.0)) ((sub1 (* _.0 _.1)) : (num _.0 _.1)) ((let ((_.0 #f)) _.1) : (num _.1) (sym _.0)) ((let ((_.0 _.1)) _.0) : (num _.1) (sym _.0)) ((sub1 (sub1 (let ((_.0 _.1)) _.2))) : (num _.1 _.2) (sym _.0)) ((let ((_.0 _.1)) (sub1 _.2)) : (=/= ((_.0 . sub1))) (num _.1 _.2) (sym _.0)) ((sub1 (sub1 (sub1 (sub1 _.0)))) : (num _.0)) ((sub1 (let ((_.0 #t)) _.1)) : (num _.1) (sym _.0)) ((if #t _.0 _.1) : (num _.0 _.1)) ((* _.0 (sub1 _.1)) : (num _.0 _.1)) ((* (sub1 _.0) _.1) : (num _.0 _.1)) ((sub1 (sub1 (* _.0 _.1))) : (num _.0 _.1)) ((let ((_.0 (zero? _.1))) _.2) : (num _.1 _.2) (sym _.0)) (((lambda (_.0) _.1) _.2) : (num _.1 _.2) (sym _.0)) ((sub1 (let ((_.0 #f)) _.1)) : (num _.1) (sym _.0)) ((sub1 (let ((_.0 _.1)) _.0)) : (num _.1) (sym _.0)) ((let ((_.0 _.1)) (let ((_.2 _.3)) _.4)) : (=/= ((_.0 . let))) (num _.1 _.3 _.4) (sym _.0 _.2)) ((sub1 (sub1 (sub1 (let ((_.0 _.1)) _.2)))) : (num _.1 _.2) (sym _.0)) ((let ((_.0 #t)) (sub1 _.1)) : (=/= ((_.0 . sub1))) (num _.1) (sym _.0)) ((sub1 (let ((_.0 _.1)) (sub1 _.2))) : (=/= ((_.0 . sub1))) (num _.1 _.2) (sym _.0)) ((sub1 (sub1 (sub1 (sub1 (sub1 _.0))))) : (num _.0)) ((sub1 (sub1 (let ((_.0 #t)) _.1))) : (num _.1) (sym _.0)) ((let ((_.0 _.1)) (sub1 _.0)) : (=/= ((_.0 . sub1))) (num _.1) (sym _.0)) ((let ((_.0 _.1)) (sub1 (sub1 _.2))) : (=/= ((_.0 . sub1))) (num _.1 _.2) (sym _.0)) ((if #f _.0 _.1) : (num _.0 _.1)) ((sub1 (if #t _.0 _.1)) : (num _.0 _.1)) ((sub1 (* _.0 (sub1 _.1))) : (num _.0 _.1)) (((lambda (_.0) _.1) #t) : (num _.1) (sym _.0)) ((let ((_.0 _.1)) (* _.2 _.3)) : (=/= ((_.0 . *))) (num _.1 _.2 _.3) (sym _.0)) ((sub1 (* (sub1 _.0) _.1)) : (num _.0 _.1)) ((sub1 (sub1 (sub1 (* _.0 _.1)))) : (num _.0 _.1)) ((* _.0 (let ((_.1 _.2)) _.3)) : (num _.0 _.2 _.3) (sym _.1)) (((lambda (_.0) _.1) #f) : (num _.1) (sym _.0)) ((sub1 (let ((_.0 (zero? _.1))) _.2)) : (num _.1 _.2) (sym _.0)) ((sub1 ((lambda (_.0) _.1) _.2)) : (num _.1 _.2) (sym _.0)) ((sub1 (sub1 (let ((_.0 #f)) _.1))) : (num _.1) (sym _.0)) ((if #t _.0 (sub1 _.1)) : (num _.0 _.1)) ((* _.0 (sub1 (sub1 _.1))) : (num _.0 _.1)) ((sub1 (sub1 (let ((_.0 _.1)) _.0))) : (num _.1) (sym _.0)) ((* (sub1 _.0) (sub1 _.1)) : (num _.0 _.1)) ((let ((_.0 #f)) (sub1 _.1)) : (=/= ((_.0 . sub1))) (num _.1) (sym _.0)) ((let ((_.0 #t)) (let ((_.1 _.2)) _.3)) : (=/= ((_.0 . let))) (num _.2 _.3) (sym _.0 _.1)) ((sub1 (let ((_.0 _.1)) (let ((_.2 _.3)) _.4))) : (=/= ((_.0 . let))) (num _.1 _.3 _.4) (sym _.0 _.2))))
-
   (test "!-23"
 ;;; self-application via let polymorphism.  I guess that's a thing???    
     (run 5 (q)
@@ -811,6 +816,11 @@
                (f1 (lambda (z) z))))
           q))
     '((-> _.0 _.0)))
+
+  (test "!-18"
+    (run 50 (q) (!- '() q 'int))
+    '((_.0 : (num _.0)) ((sub1 _.0) : (num _.0)) ((let ((_.0 _.1)) _.2) : (num _.1 _.2) (sym _.0)) ((sub1 (sub1 _.0)) : (num _.0)) ((* _.0 _.1) : (num _.0 _.1)) ((sub1 (let ((_.0 _.1)) _.2)) : (num _.1 _.2) (sym _.0)) ((sub1 (sub1 (sub1 _.0))) : (num _.0)) ((let ((_.0 #t)) _.1) : (num _.1) (sym _.0)) ((sub1 (* _.0 _.1)) : (num _.0 _.1)) ((let ((_.0 #f)) _.1) : (num _.1) (sym _.0)) ((let ((_.0 _.1)) _.0) : (num _.1) (sym _.0)) ((sub1 (sub1 (let ((_.0 _.1)) _.2))) : (num _.1 _.2) (sym _.0)) ((let ((_.0 _.1)) (sub1 _.2)) : (=/= ((_.0 . sub1))) (num _.1 _.2) (sym _.0)) ((sub1 (sub1 (sub1 (sub1 _.0)))) : (num _.0)) ((sub1 (let ((_.0 #t)) _.1)) : (num _.1) (sym _.0)) ((if #t _.0 _.1) : (num _.0 _.1)) ((* _.0 (sub1 _.1)) : (num _.0 _.1)) ((* (sub1 _.0) _.1) : (num _.0 _.1)) ((sub1 (sub1 (* _.0 _.1))) : (num _.0 _.1)) ((let ((_.0 (zero? _.1))) _.2) : (num _.1 _.2) (sym _.0)) (((lambda (_.0) _.1) _.2) : (num _.1 _.2) (sym _.0)) ((sub1 (let ((_.0 #f)) _.1)) : (num _.1) (sym _.0)) ((sub1 (let ((_.0 _.1)) _.0)) : (num _.1) (sym _.0)) ((let ((_.0 _.1)) (let ((_.2 _.3)) _.4)) : (=/= ((_.0 . let))) (num _.1 _.3 _.4) (sym _.0 _.2)) ((sub1 (sub1 (sub1 (let ((_.0 _.1)) _.2)))) : (num _.1 _.2) (sym _.0)) ((let ((_.0 #t)) (sub1 _.1)) : (=/= ((_.0 . sub1))) (num _.1) (sym _.0)) ((sub1 (let ((_.0 _.1)) (sub1 _.2))) : (=/= ((_.0 . sub1))) (num _.1 _.2) (sym _.0)) ((sub1 (sub1 (sub1 (sub1 (sub1 _.0))))) : (num _.0)) ((sub1 (sub1 (let ((_.0 #t)) _.1))) : (num _.1) (sym _.0)) ((let ((_.0 _.1)) (sub1 _.0)) : (=/= ((_.0 . sub1))) (num _.1) (sym _.0)) ((let ((_.0 _.1)) (sub1 (sub1 _.2))) : (=/= ((_.0 . sub1))) (num _.1 _.2) (sym _.0)) ((if #f _.0 _.1) : (num _.0 _.1)) ((sub1 (if #t _.0 _.1)) : (num _.0 _.1)) ((sub1 (* _.0 (sub1 _.1))) : (num _.0 _.1)) (((lambda (_.0) _.1) #t) : (num _.1) (sym _.0)) ((let ((_.0 _.1)) (* _.2 _.3)) : (=/= ((_.0 . *))) (num _.1 _.2 _.3) (sym _.0)) ((sub1 (* (sub1 _.0) _.1)) : (num _.0 _.1)) ((sub1 (sub1 (sub1 (* _.0 _.1)))) : (num _.0 _.1)) ((* _.0 (let ((_.1 _.2)) _.3)) : (num _.0 _.2 _.3) (sym _.1)) (((lambda (_.0) _.1) #f) : (num _.1) (sym _.0)) ((sub1 (let ((_.0 (zero? _.1))) _.2)) : (num _.1 _.2) (sym _.0)) ((sub1 ((lambda (_.0) _.1) _.2)) : (num _.1 _.2) (sym _.0)) ((sub1 (sub1 (let ((_.0 #f)) _.1))) : (num _.1) (sym _.0)) ((if #t _.0 (sub1 _.1)) : (num _.0 _.1)) ((* _.0 (sub1 (sub1 _.1))) : (num _.0 _.1)) ((sub1 (sub1 (let ((_.0 _.1)) _.0))) : (num _.1) (sym _.0)) ((* (sub1 _.0) (sub1 _.1)) : (num _.0 _.1)) ((let ((_.0 #f)) (sub1 _.1)) : (=/= ((_.0 . sub1))) (num _.1) (sym _.0)) ((let ((_.0 #t)) (let ((_.1 _.2)) _.3)) : (=/= ((_.0 . let))) (num _.2 _.3) (sym _.0 _.1)) ((sub1 (let ((_.0 _.1)) (let ((_.2 _.3)) _.4))) : (=/= ((_.0 . let))) (num _.1 _.3 _.4) (sym _.0 _.2))))
+
   
   (test "!-22"
 ;;; generate expressions with polymorphic let
@@ -820,36 +830,15 @@
       (fresh (x rest body)
         (== `(let ((,x (lambda . ,rest))) ,body) q)
         (membero x body)))
-    '(((let ((_.0 (lambda (_.1) _.2)))
-         (let ((_.0 _.3))
-           _.0))
-       : (=/= ((_.0 . let))) (num _.2 _.3) (sym _.0 _.1))
-      ((let ((_.0 (lambda (_.1) _.2)))
-         (_.0 _.3))
-       : (num _.2 _.3) (sym _.0 _.1))
-      ((let ((_.0 (lambda (_.1) _.2)))
-         (_.0 #t))
-       : (num _.2) (sym _.0 _.1))
-      ((let ((_.0 (lambda (_.1) _.2)))
-         (_.0 #f))
-       : (num _.2) (sym _.0 _.1))
-      ((let ((_.0 (lambda (_.1) _.2)))
-         (_.0 _.0))
-       : (num _.2) (sym _.0 _.1))
-      ((let ((_.0 (lambda (_.1) _.2)))
-         (_.0 _.0))
-       : (num _.2) (sym _.0 _.1))
-      ((let ((_.0 (lambda (_.1) _.2)))
-         (_.0 (zero? _.3)))
-       : (=/= ((_.0 . zero?))) (num _.2 _.3) (sym _.0 _.1))
-      ((let ((_.0 (lambda (_.1) _.2)))
-         (_.0 (sub1 _.3)))
-       : (=/= ((_.0 . sub1))) (num _.2 _.3) (sym _.0 _.1))
-      ((let ((_.0 (lambda (_.1) _.2)))
-         ((lambda (_.3) _.4) _.0))
-       : (=/= ((_.0 . lambda))) (num _.2 _.4) (sym _.0 _.1 _.3))
-      ((let ((_.0 (lambda (_.1) _.2)))
-         (_.0 (lambda (_.3) _.4)))
-       : (=/= ((_.0 . lambda))) (num _.2 _.4) (sym _.0 _.1 _.3))))
+    '(((let ((_.0 (lambda (_.1) _.2))) (let ((_.0 _.3)) _.0)) : (=/= ((_.0 . let))) (num _.2 _.3) (sym _.0 _.1))
+      ((let ((_.0 (lambda (_.1) _.2))) (_.0 _.3)) : (num _.2 _.3) (sym _.0 _.1))
+      ((let ((_.0 (lambda (_.1) _.2))) (_.0 #t)) : (num _.2) (sym _.0 _.1))
+      ((let ((_.0 (lambda (_.1) _.2))) (_.0 #f)) : (num _.2) (sym _.0 _.1))
+      ((let ((_.0 (lambda (_.1) _.2))) (_.0 _.0)) : (num _.2) (sym _.0 _.1))
+      ((let ((_.0 (lambda (_.1) _.2))) (_.0 _.0)) : (num _.2) (sym _.0 _.1))
+      ((let ((_.0 (lambda (_.1) _.2))) (_.0 (zero? _.3))) : (=/= ((_.0 . zero?))) (num _.2 _.3) (sym _.0 _.1))
+      ((let ((_.0 (lambda (_.1) _.2))) (_.0 (sub1 _.3))) : (=/= ((_.0 . sub1))) (num _.2 _.3) (sym _.0 _.1))
+      ((let ((_.0 (lambda (_.1) _.2))) ((lambda (_.3) _.4) _.0)) : (=/= ((_.0 . lambda))) (num _.2 _.4) (sym _.0 _.1 _.3))
+      ((let ((_.0 (lambda (_.1) _.2))) (_.0 (lambda (_.3) _.4))) : (=/= ((_.0 . lambda))) (num _.2 _.4) (sym _.0 _.1 _.3))))
   
 )
