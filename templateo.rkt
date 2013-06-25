@@ -724,10 +724,16 @@
   
   (test "!-23"
 ;;; self-application via let polymorphism.  I guess that's a thing???    
-    (run 5 (q)
+    (run* (q)
       (!- '() '(let ((f (lambda (x) 5))) (f f)) q))
     '(int))
 
+  (test "!-23b"
+;;; self-application without let poly doesn't type check!
+    (run* (q)
+      (!- '() '((lambda (f) (f f)) (lambda (x) 5)) q))
+    '())
+  
   (test "!-29"
     (run* (q)
       (!- '()
