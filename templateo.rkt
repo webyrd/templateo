@@ -750,6 +750,22 @@
     (run* (q)
       (!- '() '((lambda (f) (f f)) (lambda (x) x)) q))
     '())
+
+  (test "!-23f"
+;;; omega still doesn't typecheck    
+    (run* (q)
+      (!- '() '(let ((f (lambda (x) (x x)))) (f f)) q))
+    '())
+  
+  (test "!-23g"
+    (run* (q)
+      (!- '() '((lambda (x) (x x)) (lambda (x) (x x))) q))
+    '())
+
+  (test "!-23h"
+    (run* (q)
+      (!- '() '(let ((f (lambda (x) (x 5)))) (f f)) q))
+    '())
   
   
   (test "!-29"
