@@ -688,6 +688,66 @@
     (run 5 (q)
       (!- '() '(let ((f (lambda (x) 5))) (f f)) q))
     '(int))
+
+  (test "!-29"
+    (run* (q)
+      (!- '()
+          '(let ((f0 (lambda (x) x)))
+             5)
+          q))
+    '(int))
+  
+  (test "!-28"
+    (run* (q)
+      (!- '()
+          '(let ((f0 (lambda (x) x)))
+             (let ((f1 (lambda (y) f0)))
+               5))
+          q))
+    '(int))
+  
+  (test "!-27"
+    (run* (q)
+      (!- '()
+          '(let ((f0 (lambda (x) x)))
+             (let ((f1 (lambda (y) (f0 y))))
+               5))
+          q))
+    '(int))
+  
+  (test "!-26"
+    (run* (q)
+      (!- '()
+          '(let ((f0 (lambda (x) x)))
+             (let ((f1 (lambda (y) (f0 (f0 y)))))
+               5))
+          q))
+    '(int))
+  
+  (test "!-25"
+    (run* (q)
+      (!- '()
+          '(let ((f0 (lambda (x) x)))
+             (let ((f1 (lambda (y) (f0 (f0 y)))))
+               f1))
+          q))
+    '((-> _.0 _.0)))
+  
+  (test "!-24a"
+;;; exponential cost
+    (run* (q)
+      (!- '() '(let ((f0 (lambda (x) x))) (f0 (lambda (z) z))) q))
+    '((-> _.0 _.0)))
+
+  (test "!-24b"
+;;; exponential cost
+    (run* (q)
+      (!- '()
+          '(let ((f0 (lambda (x) x)))
+             (let ((f1 (lambda (y) (f0 (f0 y)))))
+               (f1 (lambda (z) z))))
+          q))
+    '((-> _.0 _.0)))
   
   (test "!-22"
 ;;; generate expressions with polymorphic let
