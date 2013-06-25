@@ -723,7 +723,7 @@
     '(((let ((f (lambda (_.0) _.0))) (if (f #t) (f 6) (f 7))) : (sym _.0))))
   
   (test "!-23"
-;;; self-application via let polymorphism.  I guess that's a thing???    
+;;; self-application via let polymorphism.  I guess that's a thing???
     (run* (q)
       (!- '() '(let ((f (lambda (x) 5))) (f f)) q))
     '(int))
@@ -733,6 +733,24 @@
     (run* (q)
       (!- '() '((lambda (f) (f f)) (lambda (x) 5)) q))
     '())
+
+  (test "!-23c"
+    (run* (q)
+      (!- '() '((lambda (x) (x x)) (lambda (x) (x x))) q))
+    '())
+
+  (test "!-23d"
+;;; self-application via let polymorphism.  I guess that's a thing???    
+    (run* (q)
+      (!- '() '(let ((f (lambda (x) x))) (f f)) q))
+    '((-> _.0 _.0)))
+
+  (test "!-23e"
+;;; self-application without let poly doesn't type check!    
+    (run* (q)
+      (!- '() '((lambda (f) (f f)) (lambda (x) x)) q))
+    '())
+  
   
   (test "!-29"
     (run* (q)
