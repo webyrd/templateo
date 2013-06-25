@@ -802,13 +802,11 @@
     '((-> _.0 _.0)))
   
   (test "!-24a"
-;;; exponential cost
     (run* (q)
       (!- '() '(let ((f0 (lambda (x) x))) (f0 (lambda (z) z))) q))
     '((-> _.0 _.0)))
 
   (test "!-24b"
-;;; exponential cost
     (run* (q)
       (!- '()
           '(let ((f0 (lambda (x) x)))
@@ -817,6 +815,52 @@
           q))
     '((-> _.0 _.0)))
 
+  (test "!-24c"
+    (run* (q)
+      (!- '()
+          '(let ((f0 (lambda (x) x)))
+             (let ((f1 (lambda (y) (f0 (f0 y)))))
+               (let ((f2 (lambda (y) (f1 (f1 y)))))
+                 (f2 (lambda (z) z)))))
+          q))
+    '((-> _.0 _.0)))
+
+  (test "!-24d"
+    (run* (q)
+      (!- '()
+          '(let ((f0 (lambda (x) x)))
+             (let ((f1 (lambda (y) (f0 (f0 y)))))
+               (let ((f2 (lambda (y) (f1 (f1 y)))))
+                 (let ((f3 (lambda (y) (f2 (f2 y)))))
+                   (f3 (lambda (z) z))))))
+          q))
+    '((-> _.0 _.0)))
+
+  (test "!-24e"
+    (run* (q)
+      (!- '()
+          '(let ((f0 (lambda (x) x)))
+             (let ((f1 (lambda (y) (f0 (f0 y)))))
+               (let ((f2 (lambda (y) (f1 (f1 y)))))
+                 (let ((f3 (lambda (y) (f2 (f2 y)))))
+                   (let ((f4 (lambda (y) (f3 (f3 y)))))
+                     (f4 (lambda (z) z)))))))
+          q))
+    '((-> _.0 _.0)))  
+
+  (test "!-24f"
+    (run* (q)
+      (!- '()
+          '(let ((f0 (lambda (x) x)))
+             (let ((f1 (lambda (y) (f0 (f0 y)))))
+               (let ((f2 (lambda (y) (f1 (f1 y)))))
+                 (let ((f3 (lambda (y) (f2 (f2 y)))))
+                   (let ((f4 (lambda (y) (f3 (f3 y)))))
+                     (let ((f5 (lambda (y) (f4 (f4 y)))))
+                       (f5 (lambda (z) z))))))))
+          q))
+    '((-> _.0 _.0)))
+  
   (test "!-18"
     (run 50 (q) (!- '() q 'int))
     '((_.0 : (num _.0)) ((sub1 _.0) : (num _.0)) ((let ((_.0 _.1)) _.2) : (num _.1 _.2) (sym _.0)) ((sub1 (sub1 _.0)) : (num _.0)) ((* _.0 _.1) : (num _.0 _.1)) ((sub1 (let ((_.0 _.1)) _.2)) : (num _.1 _.2) (sym _.0)) ((sub1 (sub1 (sub1 _.0))) : (num _.0)) ((let ((_.0 #t)) _.1) : (num _.1) (sym _.0)) ((sub1 (* _.0 _.1)) : (num _.0 _.1)) ((let ((_.0 #f)) _.1) : (num _.1) (sym _.0)) ((let ((_.0 _.1)) _.0) : (num _.1) (sym _.0)) ((sub1 (sub1 (let ((_.0 _.1)) _.2))) : (num _.1 _.2) (sym _.0)) ((let ((_.0 _.1)) (sub1 _.2)) : (=/= ((_.0 . sub1))) (num _.1 _.2) (sym _.0)) ((sub1 (sub1 (sub1 (sub1 _.0)))) : (num _.0)) ((sub1 (let ((_.0 #t)) _.1)) : (num _.1) (sym _.0)) ((if #t _.0 _.1) : (num _.0 _.1)) ((* _.0 (sub1 _.1)) : (num _.0 _.1)) ((* (sub1 _.0) _.1) : (num _.0 _.1)) ((sub1 (sub1 (* _.0 _.1))) : (num _.0 _.1)) ((let ((_.0 (zero? _.1))) _.2) : (num _.1 _.2) (sym _.0)) (((lambda (_.0) _.1) _.2) : (num _.1 _.2) (sym _.0)) ((sub1 (let ((_.0 #f)) _.1)) : (num _.1) (sym _.0)) ((sub1 (let ((_.0 _.1)) _.0)) : (num _.1) (sym _.0)) ((let ((_.0 _.1)) (let ((_.2 _.3)) _.4)) : (=/= ((_.0 . let))) (num _.1 _.3 _.4) (sym _.0 _.2)) ((sub1 (sub1 (sub1 (let ((_.0 _.1)) _.2)))) : (num _.1 _.2) (sym _.0)) ((let ((_.0 #t)) (sub1 _.1)) : (=/= ((_.0 . sub1))) (num _.1) (sym _.0)) ((sub1 (let ((_.0 _.1)) (sub1 _.2))) : (=/= ((_.0 . sub1))) (num _.1 _.2) (sym _.0)) ((sub1 (sub1 (sub1 (sub1 (sub1 _.0))))) : (num _.0)) ((sub1 (sub1 (let ((_.0 #t)) _.1))) : (num _.1) (sym _.0)) ((let ((_.0 _.1)) (sub1 _.0)) : (=/= ((_.0 . sub1))) (num _.1) (sym _.0)) ((let ((_.0 _.1)) (sub1 (sub1 _.2))) : (=/= ((_.0 . sub1))) (num _.1 _.2) (sym _.0)) ((if #f _.0 _.1) : (num _.0 _.1)) ((sub1 (if #t _.0 _.1)) : (num _.0 _.1)) ((sub1 (* _.0 (sub1 _.1))) : (num _.0 _.1)) (((lambda (_.0) _.1) #t) : (num _.1) (sym _.0)) ((let ((_.0 _.1)) (* _.2 _.3)) : (=/= ((_.0 . *))) (num _.1 _.2 _.3) (sym _.0)) ((sub1 (* (sub1 _.0) _.1)) : (num _.0 _.1)) ((sub1 (sub1 (sub1 (* _.0 _.1)))) : (num _.0 _.1)) ((* _.0 (let ((_.1 _.2)) _.3)) : (num _.0 _.2 _.3) (sym _.1)) (((lambda (_.0) _.1) #f) : (num _.1) (sym _.0)) ((sub1 (let ((_.0 (zero? _.1))) _.2)) : (num _.1 _.2) (sym _.0)) ((sub1 ((lambda (_.0) _.1) _.2)) : (num _.1 _.2) (sym _.0)) ((sub1 (sub1 (let ((_.0 #f)) _.1))) : (num _.1) (sym _.0)) ((if #t _.0 (sub1 _.1)) : (num _.0 _.1)) ((* _.0 (sub1 (sub1 _.1))) : (num _.0 _.1)) ((sub1 (sub1 (let ((_.0 _.1)) _.0))) : (num _.1) (sym _.0)) ((* (sub1 _.0) (sub1 _.1)) : (num _.0 _.1)) ((let ((_.0 #f)) (sub1 _.1)) : (=/= ((_.0 . sub1))) (num _.1) (sym _.0)) ((let ((_.0 #t)) (let ((_.1 _.2)) _.3)) : (=/= ((_.0 . let))) (num _.2 _.3) (sym _.0 _.1)) ((sub1 (let ((_.0 _.1)) (let ((_.2 _.3)) _.4))) : (=/= ((_.0 . let))) (num _.1 _.3 _.4) (sym _.0 _.2))))
