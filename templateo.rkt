@@ -709,7 +709,8 @@
   (test "!-15"
     (run* (q) (!- '() '(let ((f (lambda (x) x))) (f (zero? (f 5)))) q))
     '(bool))
- 
+
+;;; Tests from https://github.com/namin/TAPL-in-miniKanren-cKanren-core.logic/blob/master/clojure-tapl/tapl/test/tapl/test/letpoly.clj  
   (test "!-40"
     (run* (q) (!- '() '(lambda (x) (lambda (y) (x y))) q))
     '(((-> (-> _.0 _.1) (-> _.0 _.1)) : (absento (lambda _.0) (lambda _.1)))))
@@ -718,6 +719,26 @@
     (run* (q) (!- '() '(lambda (f) (lambda (a) ((lambda (d) f) (f a)))) q))
     '(((-> (-> _.0 _.1) (-> _.0 (-> _.0 _.1))) : (absento (lambda _.0) (lambda _.1)))))
 
+  (test "!-42"
+    (run* (q) (!- '() '(let ((a (lambda (a) a))) a) q))
+    '((-> _.0 _.0)))  
+
+  (test "!-43"
+    (run* (q) (!- '() '(let ((a (lambda (a) a))) (a a)) q))
+    '((-> _.0 _.0)))  
+
+  (test "!-44"
+    (run* (q) (!- '() '(lambda (a) (let ((b a)) b)) q))
+    '(((-> _.0 _.0) : (absento (let _.0)))))
+
+  (test "!-45"
+    (run* (q) (!- '() '(lambda (f) (lambda (a) (let ((id (lambda (x) x))) ((lambda (d) (id f)) ((id f) (id a)))))) q))
+    '(((-> (-> _.0 _.1) (-> _.0 (-> _.0 _.1))) : (absento (lambda _.0) (lambda _.1) (let _.0) (let _.1)))))
+
+  (test "!-46"
+    (run* (q) (!- '() '(lambda (f) (lambda (a) (let ((id (lambda (a) a))) ((lambda (d) (id f)) ((id f) (id a)))))) q))
+    '(((-> (-> _.0 _.1) (-> _.0 (-> _.0 _.1))) : (absento (lambda _.0) (lambda _.1) (let _.0) (let _.1)))))
+  
   (test "!-21"
     (run* (q) (!- '() '(let ((f (lambda (x) x))) f) q))
     '((-> _.0 _.0)))
