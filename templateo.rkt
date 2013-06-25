@@ -696,6 +696,69 @@
              5)
           q))
     '(int))
+
+  (test "!-30"
+    (run* (q)
+      (!- '()
+          '(let ((f0 (lambda (x) x)))
+             (let ((f1 (lambda (y) y)))
+               5))
+          q))
+    '(int))
+
+  (test "!-31"
+    (run* (q)
+      (!- '()
+          '(let ((f0 (lambda (x) x)))
+             (let ((f1 (lambda (y) y)))
+               (f1 5)))
+          q))
+    '(int))
+
+  (test "!-37"
+    (run* (q)
+      (!- '()
+          '(let ((f0 (lambda (x) x)))
+             (let ((f1 (lambda (y) y)))
+               f1))
+          q))
+    '((-> _.0 _.0)))
+  
+  (test "!-36"
+    (run* (q)
+      (!- '()
+          '(let ((f0 (lambda (x) x)))
+             (let ((f1 (lambda (y) y)))
+               f0))
+          q))
+    '((-> _.0 _.0)))
+  
+  (test "!-32"
+    (run* (q)
+      (!- '()
+          '(let ((f0 (lambda (x) x)))
+             (let ((f1 (lambda (y) y)))
+               (f0 5)))
+          q))
+    '(int))
+
+  (test "!-33"
+    (run* (q)
+      (!- '()
+          '(let ((f0 (lambda (x) x)))
+             (let ((f1 (lambda (y) y)))
+               (f0 (f1 5))))
+          q))
+    '(int))
+
+  (test "!-34"
+    (run* (q)
+      (!- '()
+          '(let ((f0 (lambda (x) x)))
+             (let ((f1 (lambda (y) y)))
+               (f0 (f0 (f1 (f1 (f0 (f1 (f0 5)))))))))
+          q))
+    '(int))
   
   (test "!-28"
     (run* (q)
