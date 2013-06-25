@@ -709,6 +709,14 @@
   (test "!-15"
     (run* (q) (!- '() '(let ((f (lambda (x) x))) (f (zero? (f 5)))) q))
     '(bool))
+ 
+  (test "!-40"
+    (run* (q) (!- '() '(lambda (x) (lambda (y) (x y))) q))
+    '(((-> (-> _.0 _.1) (-> _.0 _.1)) : (absento (lambda _.0) (lambda _.1)))))
+
+  (test "!-41"
+    (run* (q) (!- '() '(lambda (f) (lambda (a) ((lambda (d) f) (f a)))) q))
+    '(((-> (-> _.0 _.1) (-> _.0 (-> _.0 _.1))) : (absento (lambda _.0) (lambda _.1)))))
 
   (test "!-21"
     (run* (q) (!- '() '(let ((f (lambda (x) x))) f) q))
