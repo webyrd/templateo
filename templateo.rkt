@@ -404,6 +404,34 @@
         (reduceo `((lambda (,y) ((lambda (,x) (lambda (,w) ,w)) ,y)) (lambda (,z) ,z)) q)))
     '(((lambda (_.0) _.0) : (sym _.0))))
 
+  (test "reduceo-Accattoli"
+;;; counter example to naive "freshness" by Beniamino Accattoli ([TYPES] mailing list, Fri, Apr 27, 2012 at 4:19 PM)
+;;
+;;  > Dear Philip,
+;; > My first observation has been that it is easy to break "freshness",
+;; > just consider the reduction of \delta \delta. But in this case is
+;; > however possible to reduce without ever using alpha.
+;; >
+;; > If I understand the problem correctly, this is a counter-example for
+;; > both freshness and alpha:
+;; >
+;; > (\l z.zz) (\ly.\lx.yx)
+;; > ->
+;; > (\ly.\lx.yx) (\ly.\lx.yx)
+;; > ->
+;; > \lx.((\ly.\lx.yx)x)
+;; > -/->
+;; >
+;; > Best,
+;; > Beniamino Accattoli
+    (run* (q)
+      (fresh (x y z)
+        (symbolo x)
+        (symbolo y)
+        (symbolo z)
+        (reduceo `((lambda (,z) (,z ,z)) (lambda (,y) (lambda (,x) (,y ,x)))) q)))
+    '(((lambda (_.0) ((lambda (_.1) (lambda (_.2) (_.1 _.2))) _.0)) : (sym _.0 _.1 _.2))))
+  
   ;; (test "reduceo-omega"
   ;;   ; diverges, as it should!!    
   ;;   (run 1 (q) (fresh (x y) (reduceo `((lambda (,x) ((,x ,x) (,x ,x))) (lambda (,y) ((,y ,y) (,y ,y)))) q)))
