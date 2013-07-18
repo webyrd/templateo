@@ -1140,8 +1140,18 @@
 )
 
 
-#!eof
 
+
+
+
+
+
+
+
+(let ()
+
+;;; *** TODO fix this code to use the rules from p. 7 of Hindley and Seldin ***
+  
 ;;; capture-avoiding substitution
 ;;; from Defn 1.12 (p. 7) of Hindley & Seldin, Lambda-calculus and Combinators: An Introduction
 ;;; (figure based on p. 98 of Curry & Feys, 1958)
@@ -1151,51 +1161,57 @@
 ;; assumptions:
 ;; 1. all atoms (variables) are represented by fresh logic variables
 
-
-(define substo
-  (lambda (M N x out)
-    (fresh ()
-      (symbolo x)
+  
+  (define substo
+    (lambda (M N x out)
+      (fresh ()
+        (symbolo x)
       ; by induction on M
       ;
       ; in cases e through g, y =/= x and z notin FV(NP)
-      (conde
-        [(== x M) (== N out)] ; (a)  [N/x]x = N
-        [(fresh (a)
-           (== M a)
-           (symbolo a)
-           (=/= x a)
-           (== a out))] ; (b)  [N/x]a = a    for any atom a =/= x
-        [(fresh (P Q res-P res-Q)
-           (== `(,P ,Q) M)
-           (substo P N x res-P)
-           (substo Q N x res-Q)
-           (== `(,res-P ,res-Q) out))] ; (c)   [N/x](PQ) = ([N/x]P [N/x]Q)
-        [(fresh (P)
-           (== `(lambda (,x) ,P) M)
-           (== `(lambda (,x) ,P) out))] ; (d)   [N/x](lambda (x) P) = (lambda (x) P)
-        [(fresh (y P y^ p^)
-           (== `(lambda (,y) ,P) M)
-           (symbolo y)
-           (=/= x y)
-           (not-in-FVo x P)
-           (== `(lambda (,y) ,P) out))] ; (e)   [N/x](lambda (y) P) = (lambda (y) P)            if x notin FV(P)
-        [(fresh (y P P^)
-           (== `(lambda (,y) ,P) M)
-           (symbolo y)
-           (=/= x y)
+        (conde
+          [(== x M) (== N out)]         ; (a)  [N/x]x = N
+          [(fresh (a)
+             (== M a)
+             (symbolo a)
+             (=/= x a)
+             (== a out))]    ; (b)  [N/x]a = a    for any atom a =/= x
+          [(fresh (P Q res-P res-Q)
+             (== `(,P ,Q) M)
+             (substo P N x res-P)
+             (substo Q N x res-Q)
+             (== `(,res-P ,res-Q) out))] ; (c)   [N/x](PQ) = ([N/x]P [N/x]Q)
+          [(fresh (P)
+             (== `(lambda (,x) ,P) M)
+             (== `(lambda (,x) ,P) out))] ; (d)   [N/x](lambda (x) P) = (lambda (x) P)
+          [(fresh (y P y^ p^)
+             (== `(lambda (,y) ,P) M)
+             (symbolo y)
+             (=/= x y)
+             (not-in-FVo x P)
+             (== `(lambda (,y) ,P) out))] ; (e)   [N/x](lambda (y) P) = (lambda (y) P)            if x notin FV(P)
+          [(fresh (y P P^)
+             (== `(lambda (,y) ,P) M)
+             (symbolo y)
+             (=/= x y)
 ; TODO  add test: x in FV(P)   how to express this?
-           (not-in-FVo y N)
-           (== `(lambda (,y) ,P^) out)
-           (substo P N x P^))] ; (f)   [N/x](lambda (y) P) = (lambda (y) [N/x]P)       if x in FV(P) and y notin FV(N)
-        [(fresh (y z P P^ P^^)
-           (== `(lambda (,y) ,P) M)
-           (symbolo y)
-           (=/= x y)
+             (not-in-FVo y N)
+             (== `(lambda (,y) ,P^) out)
+             (substo P N x P^))] ; (f)   [N/x](lambda (y) P) = (lambda (y) [N/x]P)       if x in FV(P) and y notin FV(N)
+          [(fresh (y z P P^ P^^)
+             (== `(lambda (,y) ,P) M)
+             (symbolo y)
+             (=/= x y)
 ; TODO  add test: x in FV(P) and y in FV(N)    how to express this?
-           (== `(lambda (,z) ,P^^) out)
-           (symbolo z)
-           (not-in-FVo z `(,N ,P))
-           (substo P z y P^)
-           (substo P^ N x P^^))] ; (g)   [N/x](lambda (z) P) = (lambda (y) [N/x][z/y]P)  if x in FV(P) and y in FV(N)
-        ))))
+             (== `(lambda (,z) ,P^^) out)
+             (symbolo z)
+             (not-in-FVo z `(,N ,P))
+             (substo P z y P^)
+             (substo P^ N x P^^))] ; (g)   [N/x](lambda (z) P) = (lambda (y) [N/x][z/y]P)  if x in FV(P) and y in FV(N)
+          ))))
+
+  'dummy-expression
+  
+  )
+
+
