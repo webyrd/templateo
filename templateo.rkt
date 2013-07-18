@@ -147,6 +147,12 @@
 ;;; from Defn 1.12 (p. 7) of Hindley & Seldin, Lambda-calculus and Combinators: An Introduction
 ;;; (figure based on p. 98 of Curry & Feys, 1958)
 
+;;; *** Alas, it's not clear how to express x in FreeVars(term), so rules f an g are incomplete ***
+
+;;; So, we replace rules e, f, and g with a conservative rule that
+;;; always performs a renaming substitution equivalent to that in rule
+;;; g.
+
 ;; assumptions:
 ;; 1. all atoms (variables) are represented by fresh logic variables
 
@@ -178,30 +184,18 @@
         [(fresh (P)
            (== `(lambda (,x) ,P) M)
            (== `(lambda (,x) ,P) out))] ; (d)   [N/x](lambda (x) P) = (lambda (x) P)
-        [(fresh (y P y^ p^)
-           (== `(lambda (,y) ,P) M)
-           (symbolo y)
-           (=/= x y)
-           (not-in-FVo x P)
-           (== `(lambda (,y) ,P) out))] ; (e)   [N/x](lambda (y) P) = (lambda (y) P)            if x notin FV(P)
-        [(fresh (y P P^)
-           (== `(lambda (,y) ,P) M)
-           (symbolo y)
-           (=/= x y)
-; TODO  add test: x in FV(P)   how to express this?
-           (not-in-FVo y N)
-           (== `(lambda (,y) ,P^) out)
-           (substo P N x P^))] ; (f)   [N/x](lambda (y) P) = (lambda (y) [N/x]P)       if x in FV(P) and y notin FV(N)
+        
         [(fresh (y z P P^ P^^)
+;;; conservative rule equivalent to combined rules e, f, and g: always
+;;; perform a renaming step
            (== `(lambda (,y) ,P) M)
            (symbolo y)
            (=/= x y)
-; TODO  add test: x in FV(P) and y in FV(N)    how to express this?
            (== `(lambda (,z) ,P^^) out)
            (symbolo z)
            (not-in-FVo z `(,N ,P))
            (substo P z y P^)
-           (substo P^ N x P^^))] ; (g)   [N/x](lambda (z) P) = (lambda (y) [N/x][z/y]P)  if x in FV(P) and y in FV(N)
+           (substo P^ N x P^^))] ; (e f g)   [N/x](lambda (z) P) = (lambda (y) [N/x][z/y]P)
         ))))
 
 
