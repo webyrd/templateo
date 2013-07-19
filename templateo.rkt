@@ -1136,6 +1136,37 @@
 ;;       ((let ((_.0 (lambda (_.1) _.2))) (_.0 (sub1 _.3))) : (=/= ((_.0 . sub1))) (num _.2 _.3) (sym _.0 _.1))
 ;;       ((let ((_.0 (lambda (_.1) _.2))) ((lambda (_.3) _.4) _.0)) : (=/= ((_.0 . lambda))) (num _.2 _.4) (sym _.0 _.1 _.3))
 ;;       ((let ((_.0 (lambda (_.1) _.2))) (_.0 (lambda (_.3) _.4))) : (=/= ((_.0 . lambda))) (num _.2 _.4) (sym _.0 _.1 _.3))))
+
+
+  (test "substo-1"
+    (run 1 (q)
+      (fresh (w x y t1 t2)
+        (symbolo w)
+        (symbolo x)
+        (symbolo y)
+        (=/= w x)
+        (=/= w y)
+        (=/= x y)
+        (== `(lambda (,y) ,x) t1)
+        (substo t1 w x t2)
+        (== `(,w ,x ,y ,t1 ,t2) q)))
+    ;;; should really be (lambda (_.2) _.0) instead of (lambda (_.3) _.0), but alpha step messes up the answer
+    '(((_.0 _.1 _.2 (lambda (_.2) _.1) (lambda (_.3) _.0)) : (=/= ((_.0 . _.1)) ((_.0 . _.2)) ((_.1 . _.2)) ((_.3))) (sym _.0 _.1 _.2 _.3))))
+
+  (test "substo-1b"
+    (run* (q)
+      (fresh (w x y t1 t2)
+        (symbolo w)
+        (symbolo x)
+        (symbolo y)
+        (=/= w x)
+        (=/= w y)
+        (=/= x y)
+        (== `(lambda (,y) ,x) t1)
+        (substo t1 w x t2)
+        (== `(,w ,x ,y ,t1 ,t2) q)))
+    '(((_.0 _.1 _.2 (lambda (_.2) _.1) (lambda (_.3) _.0)) : (=/= ((_.0 . _.1)) ((_.0 . _.2)) ((_.1 . _.2)) ((_.3))) (sym _.0 _.1 _.2 _.3))))
+  
   
 )
 
