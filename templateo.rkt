@@ -199,6 +199,16 @@
         (== 5 z)
         (templateo `(lambda (,x) ,x) t1)))
     '(((lambda (5) 5) (lambda (_.0) _.0) (lambda (_.1) _.1))))
+  (test "templateo-6"
+    (run* (q)
+      (fresh (x y t1 t2)
+        (symbolo x)
+        (symbolo y)
+        (=/= x y)
+        (== `(lambda (,x) (,y ,x)) t1)
+        (templateo t1 t2)
+        (== `(,t1 ,t2) q)))
+    '((((lambda (_.0) (_.1 _.0)) (lambda (_.2) (_.3 _.2))) : (=/= ((_.0 . _.1))) (sym _.0 _.1))))
   
   (test "valueo-1" (run* (q) (fresh (x) (valueo `(lambda (,x) ,x)))) '(_.0))
   (test "valueo-2" (run* (q) (fresh (x y) (valueo `((lambda (,x) ,x) (lambda (,y) ,y))))) '())
