@@ -75,7 +75,7 @@
 ;;   (lambda (gamma x t tag old-gamma)
 ;;     (matche gamma
 ;;       [((,tag ,x ,t) . ,old-gamma)]
-;;       [((,_ ,x^ ,_) . ,gamma^)
+;;       [((,_ ,x^ ,__) . ,gamma^)
 ;;        (=/= x x^)
 ;;        (lookupo gamma^ x t tag old-gamma)])))
 
