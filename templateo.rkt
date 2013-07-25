@@ -60,13 +60,13 @@
 
 (define lookupo
   (lambda (gamma x t tag old-gamma)    
-    (fresh (x^ t^ tag^ gamma^ old-gamma^)      
-      (== `((,tag^ ,x^ ,t^ . ,old-gamma^) . ,gamma^) gamma)      
+    (fresh (x^ t^ tag^ gamma^)      
+      (== `((,tag^ ,x^ ,t^) . ,gamma^) gamma)      
       (conde
         [(== x x^)
          (== t t^)
          (== tag tag^)
-         (== old-gamma^ old-gamma)]
+         (== gamma^ old-gamma)]
         [(=/= x x^)
          (lookupo gamma^ x t tag old-gamma)]))))
 
@@ -117,7 +117,7 @@
          (symbolo x)
          (absento 'let gamma)
          (!- gamma e1 t1) ; make sure 'e1' has a valid type, regardless of whether 'x' appears in 'body'
-         (== `((generic ,x ,t1 . ,gamma) . ,gamma) gamma^)         
+         (== `((generic ,x ,t1) . ,gamma) gamma^)         
          (!- gamma^ body t))]
 ;;;
       [(fresh (e1 e2)
@@ -447,25 +447,52 @@
   ;;   (run 1 (q) (fresh (x y) (reduceo `((lambda (,x) ((,x ,x) (,x ,x))) (lambda (,y) ((,y ,y) (,y ,y)))) q)))
   ;;   'bottom)
 
+  (test "lookupo-0a"
+    (run* (q)
+      (fresh (t tag old-gamma)
+        (lookupo `((non-generic x int)) 'x t tag old-gamma)
+        (== `(,t ,tag ,old-gamma) q)))
+    '((int non-generic ())))
+
+  (test "lookupo-0b"
+    (run* (q)
+      (fresh (t tag old-gamma)
+        (lookupo `((non-generic x int) (non-generic y bool) (non-generic x bool)) 'x t tag old-gamma)
+        (== `(,t ,tag ,old-gamma) q)))
+    '((int non-generic ((non-generic y bool) (non-generic x bool)))))
+
+  (test "lookupo-0c"
+    (run* (q)
+      (fresh (t tag old-gamma)
+        (lookupo `((non-generic x int) (non-generic y bool) (non-generic x bool)) 'y t tag old-gamma)
+        (== `(,t ,tag ,old-gamma) q)))
+    '((bool non-generic ((non-generic x bool)))))
+  
   (test "lookupo-1"
-    (run* (q) (lookupo `((non-generic x int) (non-generic y bool) (non-generic x bool)) 'x q 'non-generic '()))
+    (run* (q)
+      (fresh (old-gamma)
+        (lookupo `((non-generic x int) (non-generic y bool) (non-generic x bool)) 'x q 'non-generic old-gamma)))
     '(int))
 
   (test "lookupo-2"
-    (run* (q) (fresh (x) (lookupo `((non-generic x int) (non-generic y bool) (non-generic x bool)) x q 'non-generic '())))
+    (run* (q)
+      (fresh (x old-gamma)
+        (lookupo `((non-generic x int) (non-generic y bool) (non-generic x bool)) x q 'non-generic old-gamma)))
     '(int bool))
 
   (test "lookupo-3"
-    (run* (q) (lookupo `((non-generic x int) (non-generic y bool) (non-generic x bool)) 'z q 'non-generic '()))
+    (run* (q)
+      (fresh (old-gamma)
+        (lookupo `((non-generic x int) (non-generic y bool) (non-generic x bool)) 'z q 'non-generic old-gamma)))
     '())
 
   (test "lookupo-4"
     (run 5 (q) (fresh (gamma x t tag old-gamma) (lookupo gamma x t tag old-gamma) (== `(,gamma ,x ,t ,tag ,old-gamma) q)))
-    '((((_.0 _.1 _.2 . _.3) . _.4) _.1 _.2 _.0 _.3)
-      ((((_.0 _.1 _.2 . _.3) (_.4 _.5 _.6 . _.7) . _.8) _.5 _.6 _.4 _.7) : (=/= ((_.1 . _.5))))
-      ((((_.0 _.1 _.2 . _.3) (_.4 _.5 _.6 . _.7) (_.8 _.9 _.10 . _.11) . _.12) _.9 _.10 _.8 _.11) : (=/= ((_.1 . _.9)) ((_.5 . _.9))))
-      ((((_.0 _.1 _.2 . _.3) (_.4 _.5 _.6 . _.7) (_.8 _.9 _.10 . _.11) (_.12 _.13 _.14 . _.15) . _.16) _.13 _.14 _.12 _.15) : (=/= ((_.1 . _.13)) ((_.13 . _.5)) ((_.13 . _.9))))
-      ((((_.0 _.1 _.2 . _.3) (_.4 _.5 _.6 . _.7) (_.8 _.9 _.10 . _.11) (_.12 _.13 _.14 . _.15) (_.16 _.17 _.18 . _.19) . _.20) _.17 _.18 _.16 _.19) : (=/= ((_.1 . _.17)) ((_.13 . _.17)) ((_.17 . _.5)) ((_.17 . _.9))))))
+    '((((_.0 _.1 _.2) . _.3) _.1 _.2 _.0 _.3)
+      ((((_.0 _.1 _.2) (_.3 _.4 _.5) . _.6) _.4 _.5 _.3 _.6) : (=/= ((_.1 . _.4))))
+      ((((_.0 _.1 _.2) (_.3 _.4 _.5) (_.6 _.7 _.8) . _.9) _.7 _.8 _.6 _.9) : (=/= ((_.1 . _.7)) ((_.4 . _.7))))
+      ((((_.0 _.1 _.2) (_.3 _.4 _.5) (_.6 _.7 _.8) (_.9 _.10 _.11) . _.12) _.10 _.11 _.9 _.12) : (=/= ((_.1 . _.10)) ((_.10 . _.4)) ((_.10 . _.7))))
+      ((((_.0 _.1 _.2) (_.3 _.4 _.5) (_.6 _.7 _.8) (_.9 _.10 _.11) (_.12 _.13 _.14) . _.15) _.13 _.14 _.12 _.15) : (=/= ((_.1 . _.13)) ((_.10 . _.13)) ((_.13 . _.4)) ((_.13 . _.7))))))
 
   
   (test "!-1"
