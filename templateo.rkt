@@ -4,6 +4,7 @@
 (require cKanren/neq)
 (require cKanren/absento)
 (require cKanren/template)
+(require cKanren/matche)
 
 (provide (all-defined-out))
 
@@ -59,9 +60,9 @@
 ;;; Rules from pages 103 and 333 of Pierce.  Also, http://okmij.org/ftp/ML/generalization.html
 
 (define lookupo
-  (lambda (gamma x t tag old-gamma)    
-    (fresh (x^ t^ tag^ gamma^)      
-      (== `((,tag^ ,x^ ,t^) . ,gamma^) gamma)      
+  (lambda (gamma x t tag old-gamma)
+    (fresh (x^ t^ tag^ gamma^)
+      (== `((,tag^ ,x^ ,t^) . ,gamma^) gamma)
       (conde
         [(== x x^)
          (== t t^)
@@ -69,6 +70,14 @@
          (== gamma^ old-gamma)]
         [(=/= x x^)
          (lookupo gamma^ x t tag old-gamma)]))))
+
+;; (define lookupo
+;;   (lambda (gamma x t tag old-gamma)
+;;     (matche gamma
+;;       [((,tag ,x ,t) . ,old-gamma)]
+;;       [((,_ ,x^ ,_) . ,gamma^)
+;;        (=/= x x^)
+;;        (lookupo gamma^ x t tag old-gamma)])))
 
 (define !-
   (lambda (gamma e t)
